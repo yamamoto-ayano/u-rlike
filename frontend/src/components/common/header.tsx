@@ -5,7 +5,7 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 w-full bg-gray-200">
+    <header className="top-0 z-10 w-full bg-gray-200">
       <div className="gradient-bg p-2 w-full">
         <Logo />
       </div>
