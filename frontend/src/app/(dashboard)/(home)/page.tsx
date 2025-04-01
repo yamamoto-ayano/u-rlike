@@ -61,13 +61,13 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
 
       <div className="flex-1 flex flex-col overflow-hidden">
 
         <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto">
-          <div className="flex flex-col ">
-            <div className="flex-1 relative flex flex-col">
+          <div className="flex flex-col items-center">
+            <div className="flex-1 relative flex flex-col h-full w-full" style={{ maxWidth: "90vh"}}>
               <div className="swipe-card-container flex-1" style={{ maxHeight: "calc(100vh - 250px)" }}>
                 {historyItems.map((item, index) => (
                   <div
@@ -121,7 +121,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4 overflow-auto" style={{ maxHeight: "calc(100vh - 150px)" }}>
+          <div className="bg-white rounded-lg shadow p-4 overflow-auto">
             <h2 className="text-2xl font-bold mb-4">履歴</h2>
             <div className="space-y-2">
               {Array.from({ length: 15 }).map((_, i) => (

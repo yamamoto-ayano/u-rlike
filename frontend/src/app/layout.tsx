@@ -16,15 +16,15 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="ja">
-        <body className="min-h-screen">
-            {/* ヘッダー */}
-            <Header />
+        <body className="h-screen flex flex-col">
+          {/* ヘッダー */}
+          <Header />
           {/* <Flex> */}
-          <div className="flex flex-row  h-screen">
-          {/* サイドバー */}
-          <Sidebar  />
-          {/* ヘッダーとサイドバーの高さ分余白を確保 */}
-          <main className="flex-1">{children}</main>
+          <div className="flex flex-row h-screen flex-1">
+            {/* サイドバー */}
+            <Sidebar  />
+            {/* ヘッダーとサイドバーの高さ分余白を確保 */}
+            <main className="flex-1">{children}</main>
           </div>
           {/* </Flex> */}
         </body>
