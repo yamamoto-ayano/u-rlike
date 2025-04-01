@@ -109,7 +109,7 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: Sw
     <div
       ref={cardRef}
       className={cn(
-        "swipe-card rounded-lg overflow-hidden shadow-lg bg-white transition-all duration-300",
+        "swipe-card rounded-lg overflow-hidden shadow-lg bg-white transition-all duration-300 w-full",
         swipeDirection === "right" && "swipe-effect-right",
         swipeDirection === "left" && "swipe-effect-left",
         swipeDirection === "up" && "swipe-effect-up",
@@ -159,17 +159,6 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: Sw
         </div>
         <div className="mt-4">
           <p className="text-sm">{url}</p>
-        </div>
-      </div>
-
-      <div className="p-4 border-t">
-        <div className="flex justify-center gap-8">
-          <Button variant="outline" size="icon" className="rounded-full h-14 w-14 border-2 border-dislike">
-            <span className="text-3xl text-dislike">✕</span>
-          </Button>
-          <Button variant="outline" size="icon" className="rounded-full h-14 w-14 border-2 border-like">
-            <Heart className="h-8 w-8 text-like" />
-          </Button>
         </div>
       </div>
     </div>

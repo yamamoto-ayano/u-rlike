@@ -62,14 +62,11 @@ export default function Home() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-64 h-full">
 
-      </div>
+      <div className="flex-1 flex flex-col overflow-hidden">
 
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-
-        <main className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto">
-          <div className="flex flex-col h-full">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto">
+          <div className="flex flex-col ">
             <div className="flex-1 relative flex flex-col">
               <div className="swipe-card-container flex-1" style={{ maxHeight: "calc(100vh - 250px)" }}>
                 {historyItems.map((item, index) => (
@@ -150,7 +147,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   )

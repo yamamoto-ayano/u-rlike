@@ -30,7 +30,7 @@ export function Sidebar({ className }: SidebarProps) {
   ]
 
   return (
-    <div className={cn("flex flex-col h-full p-4 border-r w-64 ", className)}>
+    <div className={cn("flex flex-col p-4 border-r w-64 ", className)}>
       <nav className="space-y-1 flex-1">
         {navItems.map((item) => (
           <div key={item.path}>

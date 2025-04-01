@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 import { Header } from "@/components/common/header";
 import { Sidebar } from "@/components/common/sidebar";
+import { Flex } from "@/components/ui/flex";
 
 export const metadata: Metadata = {
   title: "U'RLike",
@@ -15,13 +16,17 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="ja">
-        <body className="flex flex-col min-h-screen">
-          {/* ヘッダー */}
-          <Header />
+        <body className="min-h-screen">
+            {/* ヘッダー */}
+            <Header />
+          {/* <Flex> */}
+          <div className="flex flex-row  h-screen">
           {/* サイドバー */}
           <Sidebar  />
           {/* ヘッダーとサイドバーの高さ分余白を確保 */}
-          <main className="my-16 flex-1">{children}</main>
+          <main className="flex-1">{children}</main>
+          </div>
+          {/* </Flex> */}
         </body>
       </html>
   );

@@ -26,11 +26,6 @@ export function MemoInput({ initialValue = "", onSave }: MemoInputProps) {
         onChange={(e) => setMemo(e.target.value)}
         className="min-h-[80px] bg-white"
       />
-      {onSave && (
-        <div className="mt-2 flex justify-end">
-          <Button onClick={handleSave}>保存</Button>
-        </div>
-      )}
     </div>
   )
 }
