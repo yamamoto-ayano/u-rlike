@@ -3,6 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@config "../../tailwind.config.ts";
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
