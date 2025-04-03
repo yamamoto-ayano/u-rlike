@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const flexComponents = cva("flex items-center justify-center", {
+const flexComponents = cva("flex items-start justify-center", {
   variants: {
     direction: {
       row: "flex-row",
