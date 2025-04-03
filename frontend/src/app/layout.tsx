@@ -16,17 +16,20 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="ja">
-        <body className="h-screen flex flex-col">
-          {/* ヘッダー */}
-          <Header />
-          {/* <Flex> */}
-          <div className="flex flex-row h-screen flex-1">
-            {/* サイドバー */}
-            <Sidebar  />
-            {/* ヘッダーとサイドバーの高さ分余白を確保 */}
-            <main className="flex-1">{children}</main>
-          </div>
-          {/* </Flex> */}
+        <body>
+          <Flex className="flex-col w-full ">
+            <Flex className="flex-row w-full">
+            <Header/>
+            </Flex>
+            <Flex className="flex-row w-full">
+              <Flex className="flex-row items-start justify-start p-4 "> 
+                <Sidebar />
+              </Flex>
+              <Flex className="w-full">
+                {children}
+              </Flex>
+            </Flex>
+          </Flex>
         </body>
       </html>
   );
