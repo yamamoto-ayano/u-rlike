@@ -66,7 +66,7 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: Sw
     const absX = Math.abs(offsetX)
     const absY = Math.abs(offsetY)
 
-    if (absX > 20 || absY > 100) {
+    if (absX > 100 || absY > 100) {
       if (absX > absY) {
         if (offsetX > 0) {
           setSwipeDirection("right")
