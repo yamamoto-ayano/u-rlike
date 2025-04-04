@@ -134,9 +134,9 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: Sw
           <Image src={imageUrl || "/placeholder.svg?height=200&width=400"} alt={title} fill className="object-cover" />
         </div>
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <div className="flex items-center gap-2">
+          <div className="">
             {["JavaScript", "API", "TypeScript", "フレームワーク", "Hono"].map(tag => (
-              <div key={tag} className="bg-gray-200 text-xs px-2 py-1 rounded">{tag}</div>
+              <div key={tag} className="bg-gray-200 text-xs px-2 py-1 rounded inline-block ml-1 mt-1">{tag}</div>
             ))}
           </div>
         </div>
