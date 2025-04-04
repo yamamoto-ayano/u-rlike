@@ -18,10 +18,12 @@ import { UrlCardNode } from '@/components/folder/url-card-node'
 import { useParams } from 'next/navigation'
 import '@xyflow/react/dist/style.css'
 
-interface CustomEdgeData {
+// カスタムエッジの型定義
+interface CustomEdgeData extends Edge<Record<string, unknown>, string | undefined> {
     onDelete?: (id: string) => void
+    onUpdateMemo?: (id: string, memo: string) => void
     memo?: string
-  }  
+}
 
 // メモ付き削除ボタンカスタムエッジの定義
 const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
@@ -33,7 +35,8 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
     targetY,
   })
 
-  const [memoText, setMemoText] = useState(data?.memo || '')
+  // メモの初期値を取得
+  const [memoText, setMemoText] = useState<string>(typeof data?.memo === 'string' ? data.memo : '')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // 高さをテキストに応じて調整
@@ -45,11 +48,15 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
     }
   }, [memoText])
 
+  // メモの変更をハンドルする関数
   const handleMemoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMemoText(e.target.value)
-    data?.onUpdateMemo?.(id, e.target.value)
+    if (data?.onUpdateMemo) {
+      (data.onUpdateMemo as (id: string, memo: string) => void)(id, e.target.value)
+    }
   }
 
+  // メモの変更をAPIへ送信する関数
   const handleMemoBlur = () => {
     // APIへ送信例
     fetch(`/api/edges/${id}`, {
@@ -68,8 +75,10 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
         id={id}
         d={edgePath}
         className="react-flow__edge-path stroke-blue-500"
-        markerEnd={markerEnd || 'url(#arrowhead)'}
+        markerEnd="url(#arrowhead)" // 矢印の方向をターゲットノードに向ける
       />
+
+      {/* メモと削除ボタンを表示 */}
       <foreignObject
         width={200}
         height={100}
@@ -114,7 +123,7 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
 
           <button
             onClick={() => {
-                data?.onDelete?.(id)
+                (data?.onDelete as (id: string) => void)?.(id)
             }}
             style={{
               padding: '4px 12px',
@@ -130,7 +139,8 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
           </button>
         </div>
       </foreignObject>
-
+              
+        {/* 矢印の定義 */}
       <defs>
         <marker
           id="arrowhead"
@@ -148,8 +158,7 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
   )
 }
 
-
-// sampleLikedItems を使ってノード生成
+// テスト用のURLカードデータ
 const sampleLikedItems = [
   {
     id: '1',
@@ -177,28 +186,48 @@ const sampleLikedItems = [
   },
 ]
 
+// フォルダ詳細ページ
+// フォルダのURLを取得して、URLカードを表示するページ
 export default function FolderDetailPage() {
   const { id } = useParams()
   const [likedItems, setLikedItems] = useState(sampleLikedItems)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
 
-  const handleLike = (itemId: string) => {
-    setLikedItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, liked: !item.liked } : item
-      )
-    )
-  }
+  // 初期データを取得
+  useEffect(() => {
+    fetch(`/api/folders/${id}/graph`)
+      .then((res) => res.json())
+      .then((data) => {
+        const fetchedNodes = data.nodes.map((node: any) => ({
+          ...node,
+          data: {
+            ...node.data,
+            draggable: true,
+          },
+        }))
+        const fetchedEdges = data.edges.map((edge: any) => ({
+          ...edge,
+          type: 'custom-edge',
+        }))
+        setNodes(fetchedNodes)
+        setEdges(fetchedEdges)
+      })
+      .catch((err) => console.error('Error fetching graph data:', err))
+  }, [id])
 
+
+  // シェアボタンの処理
   const handleShare = (id: string, platform: 'line' | 'discord') => {
     console.log(`Sharing item ${id} on ${platform}`)
   }
 
+  // ドラッグスタートの処理
   const handleDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.setData('text/plain', id)
     setDraggedItemId(id)
   }
 
+  // ドロップ処理（ノードの移動など）
   const initialNodes: Node[] = useMemo(
     () =>
       likedItems.map((item, index) => ({
@@ -207,7 +236,6 @@ export default function FolderDetailPage() {
         position: { x: 100 + index * 250, y: 100 },
         data: {
           ...item,
-          onLike: handleLike,
           onShare: handleShare,
           onDragStart: (e: React.DragEvent) => handleDragStart(e, item.id),
           draggable: true,
@@ -216,6 +244,7 @@ export default function FolderDetailPage() {
     [likedItems]
   )
 
+  // ノードの初期位置を設定
   const initialEdges: Edge[] = useMemo(() => {
     const edges: Edge[] = []
     for (let i = 0; i < likedItems.length - 1; i++) {
@@ -230,21 +259,25 @@ export default function FolderDetailPage() {
     return edges
   }, [likedItems])
 
+  // ノードとエッジの状態管理
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
-  const onConnect = useCallback(
+  // ノードの追加処理
+  const handleConnect = useCallback(
     (connection: Connection) => {
-      const edge = {
+      const edge: Edge = {
+        id: `${connection.source}-${connection.target}`, // ユニークなIDを追加
         ...connection,
         type: 'custom-edge',
         data: {}, // 初期データ忘れずに
-      }
+      };
       setEdges((eds) => addEdge(edge, eds))
     },
     [setEdges]
   )
 
+  // ノードの削除処理
   const nodeTypes = useMemo(
     () => ({
       urlCard: UrlCardNode,
@@ -252,7 +285,93 @@ export default function FolderDetailPage() {
     []
   )
 
-  // ✕ボタン付きエッジの登録：setEdges を渡す
+  // ノード変更時にAPIへ送信
+  const handleNodesChange = useCallback(
+    (changes: any) => {
+      onNodesChange(changes)
+
+      // 変更されたノードの位置をバックエンドに送信
+      const updatedNodes = changes
+        .filter((change: any) => change.type === 'position')
+        .map((change: any) => ({
+          id: change.id,
+          position: change.position,
+        }))
+
+      if (updatedNodes.length > 0) {
+        fetch(`/api/folders/${id}/nodes/positions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedNodes),
+        })
+          .then((res) => res.json())
+          .then((res) => console.log('Node positions updated:', res))
+          .catch((err) => console.error('Error updating node positions:', err))
+      }
+    },
+    [id, onNodesChange]
+  )
+
+// エッジ作成時にAPIへ送信
+const onConnect = useCallback(
+  async (connection: Connection) => {
+    const newEdge = {
+      ...connection,
+      id: `${connection.source}-${connection.target}`, // エッジIDを明示的に設定
+      type: 'custom-edge',
+      data: {}, // 必要に応じて初期データを設定
+    };
+
+    // フロントエンドでエッジを追加
+    setEdges((eds) => addEdge({ ...newEdge, type: newEdge.type || 'custom-edge' }, eds));
+
+    try {
+      // サーバーに新しいエッジを送信
+      const response = await fetch(`/api/folders/${id}/edges`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEdge),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create edge: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Edge created:', result);
+    } catch (err) {
+      console.error('Error creating edge:', err);
+    }
+  },
+  [id, setEdges]
+);
+
+// エッジ削除時にAPIへ送信
+const handleEdgeDelete = useCallback(
+  async (edgeId: string) => {
+    // フロントエンドでエッジを削除
+    setEdges((eds) => eds.filter((e) => e.id !== edgeId));
+
+    try {
+      // サーバーに削除リクエストを送信
+      const response = await fetch(`/api/folders/${id}/edges/${edgeId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete edge: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log('Edge deleted:', result);
+    } catch (err) {
+      console.error('Error deleting edge:', err);
+    }
+  },
+  [id, setEdges]
+);
+
+  // エッジのカスタムレンダリング
   const edgeTypes = useMemo(
     () => ({
       'custom-edge': (edgeProps: EdgeProps) => (
@@ -269,21 +388,23 @@ export default function FolderDetailPage() {
     [setEdges]
   )
 
+  // ノードのドラッグ処理
   return (
     <main className="h-screen w-full p-6">
       <h2 className="text-2xl font-bold mb-6">フォルダ: {id}</h2>
 
       <div className="h-[80vh] border rounded">
+        {/* React Flowのコンポーネント */}
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          minZoom={0.5}
+          minZoom={0.1}
           maxZoom={2}
           defaultViewport={{ x: 0, y: 0, zoom: 1 }}
           panOnDrag={true}
