@@ -65,7 +65,7 @@ app.post("/histories", validateRequest(CreateHistorySchema), (c) => {
   // DB保存処理などをここに追加
   return c.json({
     status: 200,
-    message: "add CreateHistorySchema successful",
+    "message": "add history successful"
   }, 200);
 });
 
@@ -124,7 +124,7 @@ app.get("/bookmarks/:folder_id", (c) => {
   const bookmarkItems = [
     {
       id: "1",
-      name: "Google",
+      url: "Google",
       title: "Search Engine",
       image: "https://example.com/logo.png",
       memo: "Frequently used",
@@ -132,7 +132,7 @@ app.get("/bookmarks/:folder_id", (c) => {
     },
     {
       id: "2",
-      name: "GitHub",
+      url: "GitHub",
       title: "Code Hosting",
       image: "https://example.com/github.png",
       memo: "Code repository",
@@ -200,13 +200,13 @@ app.put("/bookmarks/:folder_id/:bookmark_id", validateRequest(UpdateBookmarkSche
   console.log("Updating bookmark", bookmarkId, "in folder", folderId, "with new folderId", newFolderId, image, memo);
   // DB更新処理などをここに追加
   return c.json({
-    id: 1,
+    id: "1",
     message: "change bookmark successful",
     status: 200,
   }, 200);
 });
 
-// test用ルートエンドポイント：単純なテキストを返す
+// test用エンドポイント
 app.get('/', (c) => {
   return c.text('Hello Hono!');
 });
