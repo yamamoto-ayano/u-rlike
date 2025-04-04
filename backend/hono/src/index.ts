@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 
 // ----- スキーマ定義 -----
 const ImageSchema = z.object({
-  image: z.string().max(3_000_000).optional(), // base64想定（3MBまで）
+  image: z.string().max(7_000_000).optional(), // base64想定（7MBまで）
 });
 
 export const CreateHistorySchema = z.object({
@@ -80,7 +80,7 @@ app.get("/histories", (c) => {
         url: "https://example.com",
         title: "History Entry",
         description: "Sample history description",
-        image: "img.png",
+        image: "base64-encoded-image-string",
       }
     ]
   });
@@ -126,7 +126,7 @@ app.get("/bookmarks/:folder_id", (c) => {
       id: "1",
       url: "Google",
       title: "Search Engine",
-      image: "https://example.com/logo.png",
+      image: "base64-encoded-image-string",
       memo: "Frequently used",
       description: "A search engine website"
     },
@@ -134,7 +134,7 @@ app.get("/bookmarks/:folder_id", (c) => {
       id: "2",
       url: "GitHub",
       title: "Code Hosting",
-      image: "https://example.com/github.png",
+      image: "bae64-encoded-image-string",
       memo: "Code repository",
       description: "A platform for hosting code"
     }
