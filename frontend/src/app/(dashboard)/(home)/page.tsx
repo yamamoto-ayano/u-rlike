@@ -43,7 +43,7 @@ export default function Home() {
     // 次のカードに移動
     setTimeout(() => {
       setCurrentCardIndex((prev) => (prev + 1) % historyItems.length)
-    }, 300)
+    }, 0)
 
     // 実際のアプリではここでデータを更新する処理を行う
     if (direction === "right") {
@@ -63,9 +63,9 @@ export default function Home() {
   return (
     <div className="flex h-full">
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-visible">
 
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto overflow-visible">
           <div className="flex flex-col items-center">
             <div className="flex-1 relative flex flex-col h-full w-full" style={{ maxWidth: "90vh"}}>
               <div className="swipe-card-container flex-1" style={{ maxHeight: "calc(100vh - 250px)" }}>
