@@ -45,7 +45,7 @@ export default function RootLayout({
         <Head>
           <link rel="icon" href="/icon.png" />
         </Head>
-        <body>
+        <body className="overflow-hidden">
           <ClientProviders>
             <Flex className="flex-col w-full ">
               <Flex className="flex-row w-full">

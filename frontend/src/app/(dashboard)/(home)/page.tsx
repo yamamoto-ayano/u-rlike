@@ -30,20 +30,27 @@ const sampleHistoryItems = [
     description: "Server Componentsの改善やApp Routerの安定化など、Next.js 14の主要な変更点を紹介します。",
     imageUrl: "/placeholder.svg?height=200&width=400",
   },
+  // 以下、重複データはそのまま
 ]
 
 export default function Home() {
   const [historyItems, setHistoryItems] = useState(sampleHistoryItems)
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  const [card0CardIndex, setCard0CardIndex] = useState(0)
+  const [card1CardIndex, setCard1CardIndex] = useState(1)
   const [memo, setMemo] = useState("")
+  const [currentCardNo, setCurrentCardNo] = useState(0)
 
+  // スワイプ処理
   const handleSwipe = (direction: "left" | "right" | "up", id: string) => {
     console.log(`Swiped ${direction} on card ${id}`)
 
     // 次のカードに移動
-    setTimeout(() => {
-      setCurrentCardIndex((prev) => (prev + 1) % historyItems.length)
-    }, 300)
+    setCurrentCardNo((prev) => (prev + 1) % 2)
+    if (currentCardNo === 0) {
+      setCard0CardIndex((prev) => prev + 2)
+    } else {
+      setCard1CardIndex((prev) => prev + 2)
+    }
 
     // 実際のアプリではここでデータを更新する処理を行う
     if (direction === "right") {
@@ -55,72 +62,100 @@ export default function Home() {
     }
   }
 
+  // メモ保存処理
   const handleSaveMemo = (text: string) => {
     setMemo(text)
     // 実際のアプリではここでメモを保存する処理を行う
   }
 
+  // 現在のカードデータ
+  const card0Card = historyItems[card0CardIndex]
+  const card1Card = historyItems[card1CardIndex]
+
+  // カードがすべて使い果たされた場合
+  const isCard0Visible = card0CardIndex < historyItems.length
+  const isCard1Visible = card1CardIndex < historyItems.length
+
   return (
     <div className="flex h-full">
-
-      <div className="flex-1 flex flex-col overflow-hidden">
-
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto">
+      <div className="flex-1 flex flex-col overflow-visible">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-auto overflow-visible">
           <div className="flex flex-col items-center">
-            <div className="flex-1 relative flex flex-col h-full w-full" style={{ maxWidth: "90vh"}}>
-              <div className="swipe-card-container flex-1" style={{ maxHeight: "calc(100vh - 250px)" }}>
-                {historyItems.map((item, index) => (
+            <div className="flex-1 relative flex flex-col h-full w-full" style={{ maxWidth: "90vh" }}>
+              <div className="swipe-card-container flex-1 relative" style={{ maxHeight: "calc(100vh - 250px)" }}>
+                {/* カード0 */}
+                {isCard0Visible && (
                   <div
-                    key={item.id}
-                    className={`absolute inset-0 transition-opacity duration-300 ${
-                      index === currentCardIndex ? "opacity-100 z-10" : "opacity-0 -z-10"
-                    }`}
+                    className="absolute inset-0 transition-transform duration-300"
+                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 0 ? 10 : 0 }}
                   >
                     <SwipeCard
-                      id={item.id}
-                      title={item.title}
-                      url={item.url}
-                      description={item.description}
-                      imageUrl={item.imageUrl}
+                      id={card0Card.id}
+                      title={card0Card.title}
+                      url={card0Card.url}
+                      description={card0Card.description}
+                      imageUrl={card0Card.imageUrl}
                       onSwipe={handleSwipe}
                     />
                   </div>
-                ))}
+                )}
+
+                {/* カード1 */}
+                {isCard1Visible && (
+                  <div
+                    className="absolute inset-0 transition-transform duration-300 z-0"
+                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 1 ? 10 : 0 }}
+                  >
+                    <SwipeCard
+                      id={card1Card.id}
+                      title={card1Card.title}
+                      url={card1Card.url}
+                      description={card1Card.description}
+                      imageUrl={card1Card.imageUrl}
+                      onSwipe={handleSwipe}
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="flex justify-center gap-8 mt-4 mb-4">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-dislike hover:bg-dislike/10 hover:border-dislike"
-                  onClick={() => handleSwipe("left", historyItems[currentCardIndex].id)}
-                >
-                  <Trash2 className="h-8 w-8 text-dislike" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-superlike hover:bg-superlike/10 hover:border-superlike"
-                  onClick={() => handleSwipe("up", historyItems[currentCardIndex].id)}
-                >
-                  <Star className="h-8 w-8 text-superlike" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-like hover:bg-like/10 hover:border-like"
-                  onClick={() => handleSwipe("right", historyItems[currentCardIndex].id)}
-                >
-                  <ThumbsUp className="h-8 w-8 text-like" />
-                </Button>
-              </div>
+              {/* スワイプボタン */}
+              {(isCard0Visible || isCard1Visible) && (
+                <div className="flex justify-center gap-8 mt-4 mb-4">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-dislike hover:bg-dislike/10 hover:border-dislike"
+                    onClick={() => handleSwipe("left", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                  >
+                    <Trash2 className="h-8 w-8 text-dislike" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-superlike hover:bg-superlike/10 hover:border-superlike"
+                    onClick={() => handleSwipe("up", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                  >
+                    <Star className="h-8 w-8 text-superlike" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-like hover:bg-like/10 hover:border-like"
+                    onClick={() => handleSwipe("right", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                  >
+                    <ThumbsUp className="h-8 w-8 text-like" />
+                  </Button>
+                </div>
+              )}
 
+              {/* メモ入力 */}
               <div className="mt-2">
                 <MemoInput onSave={handleSaveMemo} />
               </div>
             </div>
           </div>
 
+          {/* 履歴 */}
           <div className="bg-white rounded-lg shadow p-4 overflow-auto">
             <h2 className="text-2xl font-bold mb-4">履歴</h2>
             <div className="space-y-2">
@@ -152,4 +187,3 @@ export default function Home() {
     </div>
   )
 }
-
