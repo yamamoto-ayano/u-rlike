@@ -36,8 +36,6 @@ const sampleHistoryItems = [
 
 export default function Home() {
   const [historyItems, setHistoryItems] = useState(sampleHistoryItems)
-  const [card0CardIndex, setCard0CardIndex] = useState(0)
-  const [card1CardIndex, setCard1CardIndex] = useState(1)
   const [memo, setMemo] = useState("")
   const [currentCardNo, setCurrentCardNo] = useState(0)
 
@@ -46,15 +44,10 @@ export default function Home() {
     console.log(`Swiped ${direction} on card ${id}`)
 
     // 履歴から削除
-    setHistoryItems((prev) => prev.filter((item) => item.id !== id))
+    setHistoryItems((prev) => prev.filter((item) => item.id !== id));
 
     // 次のカードに移動
     setCurrentCardNo((prev) => (prev + 1) % 2)
-    if (currentCardNo === 0) {
-      setCard0CardIndex((prev) => prev + 2)
-    } else {
-      setCard1CardIndex((prev) => prev + 2)
-    }
 
     // 実際のアプリではここでデータを更新する処理を行う
     if (direction === "right") {
@@ -76,12 +69,12 @@ export default function Home() {
   }
 
   // 現在のカードデータ
-  const card0Card = historyItems[card0CardIndex]
-  const card1Card = historyItems[card1CardIndex]
+  const card0Card = historyItems[currentCardNo]
+  const card1Card = historyItems[(1 + currentCardNo) % 2]
 
   // カードがすべて使い果たされた場合
-  const isCard0Visible = card0CardIndex < historyItems.length
-  const isCard1Visible = card1CardIndex < historyItems.length
+  const isCard0Visible = !(card0Card === undefined)
+  const isCard1Visible = !(card1Card === undefined)
 
   return (
     <div className="flex ">
