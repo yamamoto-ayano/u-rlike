@@ -58,7 +58,8 @@
             data: [
                 {
                     id: string,
-                    name: string
+                    name: string,
+                    count: number
                 },
                 ...
             ]
@@ -96,6 +97,7 @@
         {
             status: 200,
             message: "get bookmarks23 successful",
+            count: number,
             data: [
                 {
                     id: string,
@@ -362,17 +364,26 @@ app.get('/bookmarks', async (c) => {
     const folders = await prisma.bookmarkFolder.findMany({
       select: {
         id: true,
-        name: true
+        name: true,
+        _count: {
+          select: {
+            bookmarks: true
+          }
+        }
       }
     })
 
     return c.json({
       status: 200,
-      message: "getbookmark folder successful",
-      data: folders
+      message: "get bookmark folder successful",
+      data: folders.map(({ _count, ...rest }) => ({
+        ...rest,
+        count: _count.bookmarks
+      }))
     })
-  } catch (error) {
-    return c.json({ status: 500, message: "Failed to get bookmark folder" }, 500)
+  }
+  catch (error) {
+    return c.json({ status: 500, message: "Failed to get bookmark folders" }, 500)
   }
 })
 
@@ -409,10 +420,17 @@ app.get('bookmarks/:folderId', async (c) => {
       }
     })
 
+    const count = await prisma.bookmark.count({
+      where: {
+        folderId
+      }
+    })
+
     return c.json({
       status: 200,
       message: "get bookmarks successful",
-      data: bookmarks
+      data: bookmarks,
+      count
     })
   } catch (error) {
     return c.json({ status: 500, message: "Failed to get bookmarks" }, 500)
