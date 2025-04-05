@@ -41,7 +41,7 @@ export function Sidebar({ className }: SidebarProps) {
 
       <div className={cn(
         // PCもモバイルも縦レイアウト。高さは画面いっぱいに
-        "fixed top-0 left-0 z-40   bg-white w-64 p-4 transform transition-transform lg:relative lg:translate-x-0 flex flex-col",
+        "fixed top-8px left-0 z-40   bg-white w-64 p-4 transform transition-transform lg:relative lg:translate-x-0 flex flex-col",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full",
         className
       )}>

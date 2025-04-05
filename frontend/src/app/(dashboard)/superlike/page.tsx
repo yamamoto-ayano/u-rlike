@@ -92,7 +92,6 @@ export default function SuperlikePage() {
                   imageUrl={item.imageUrl}
                   liked={item.liked}
                   onLike={handleLike}
-                  onShare={handleShare}
                   draggable={true}
                   onDragStart={handleDragStart}
                 />

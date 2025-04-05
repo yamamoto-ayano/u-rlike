@@ -477,7 +477,6 @@ const handleEdgeDelete = useCallback(
       key={item.id}
       {...item}
       onLike={() => {}}
-      onShare={handleShare}
       draggable={true}
       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)} // ドラッグ開始時にIDを設定
       className="w-53 h-30"
