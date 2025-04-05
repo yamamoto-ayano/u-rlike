@@ -10,37 +10,30 @@ import { FolderDropArea } from "@/components/folder/folder-drop-area"
 const sampleLikedItems = [
   {
     id: "1",
-    title: "URLタイトル",
-    url: "https://example.com/1",
-    description: "メモメモメモメモメモメモメモメモ",
+    title: "camp vol.2 - Figmaデザイン",
+    url: "https://www.figma.com/design/UMwkZUoDMvCZj3E9Wz70Ip/camp-vol.2?node-id=95-170&t=DIMraF4L98V4GEbE-0",
+    description: "デザインイベントcamp vol.2のFigmaプロジェクト。UIコンポーネントやレイアウトの構成を視覚的に確認可能。",
     imageUrl: "/placeholder.svg?height=96&width=96",
     liked: true,
   },
   {
     id: "2",
-    title: "URLタイトル",
-    url: "https://example.com/2",
-    description: "メモメモメモメモメモメモメモメモ",
+    title: "【完全解説】Cloudflare Pages + HonoでWebアプリ公開",
+    url: "https://qiita.com/kaiparu/items/88ae7c11fb45b82b447a",
+    description: "Cloudflare Pages上にHonoアプリをデプロイする方法を、画像付きでわかりやすく解説。",
     imageUrl: "/placeholder.svg?height=96&width=96",
     liked: true,
   },
   {
     id: "3",
-    title: "URLタイトル",
-    url: "https://example.com/3",
-    description: "メモメモメモメモメモメモメモメモ",
-    imageUrl: "/placeholder.svg?height=96&width=96",
-    liked: true,
-  },
-  {
-    id: "4",
-    title: "URLタイトル",
-    url: "https://example.com/4",
-    description: "メモメモメモメモメモメモメモメモ",
+    title: "Supabase + Next.jsでAIチャットアプリを作る",
+    url: "https://zenn.dev/yasse/articles/2650d580ae8392",
+    description: "SupabaseとNext.jsを用いて、ChatGPT APIを活用したAIチャットアプリを構築するチュートリアル。",
     imageUrl: "/placeholder.svg?height=96&width=96",
     liked: true,
   },
 ]
+
 
 const sampleFolders = [
   { id: "folder1", name: "フォルダ" },
