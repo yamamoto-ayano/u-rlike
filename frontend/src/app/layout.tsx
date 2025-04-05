@@ -3,6 +3,7 @@ import "../styles/globals.css";
 import { Header } from "@/components/common/header";
 import { Sidebar } from "@/components/common/sidebar";
 import { Flex } from "@/components/ui/flex";
+import Head from 'next/head';
 
 
 import { FolderModalWrapper } from "@/components/common/FolderModalWrapper";
@@ -41,6 +42,9 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="ja">
+        <Head>
+          <link rel="icon" href="/icon.png" />
+        </Head>
         <body>
           <ClientProviders>
             <Flex className="flex-col w-full ">
