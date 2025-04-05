@@ -51,7 +51,7 @@ export default function RootLayout({
               <Flex className="flex-row w-full">
               <Header/>
               </Flex>
-              <Flex className="flex-row w-full grow-1">
+              <Flex className="flex-row w-full grow-1 overflow-scroll">
                 <Flex className="flex-row items-start justify-start lg:p-4 h-full">
                   <Sidebar />
                 </Flex>
