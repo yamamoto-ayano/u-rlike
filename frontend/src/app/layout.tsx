@@ -43,7 +43,7 @@ export default function RootLayout({
   return (
       <html lang="ja">
         <Head>
-          <link rel="icon" href="/icon.png" />
+          <link rel="icon" href="frontend/public/icon.png" />
         </Head>
         <body className="overflow-hidden">
           <ClientProviders>
