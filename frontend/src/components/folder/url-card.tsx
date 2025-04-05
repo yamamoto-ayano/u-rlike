@@ -19,6 +19,7 @@ interface UrlCardProps {
   onShare?: (id: string, platform: "line" | "discord") => void
   draggable?: boolean
   onDragStart?: (e: React.DragEvent, id: string) => void
+  className?: string; 
 }
 
 export function UrlCard({
@@ -32,6 +33,7 @@ export function UrlCard({
   onShare,
   draggable = false,
   onDragStart,
+  className,
 }: UrlCardProps) {
   const [isLiked, setIsLiked] = useState(liked)
 
@@ -56,11 +58,11 @@ export function UrlCard({
 
   return (
     <div
-      className={`flex gap-4 p-4 border rounded-lg mb-4 bg-white ${draggable ? "draggable-item" : ""}`}
+      className={`flex gap-4 p-4 border rounded-lg mb-4 bg-white ${className} ${draggable ? "draggable-item" : ""}`}
       draggable={draggable}
       onDragStart={handleDragStart}
     >
-      <div className="relative w-24 h-24 flex-shrink-0">
+      <div className="relative flex-shrink-0">
         <Image
           src={imageUrl || "/placeholder.svg?height=96&width=96"}
           alt={title}
