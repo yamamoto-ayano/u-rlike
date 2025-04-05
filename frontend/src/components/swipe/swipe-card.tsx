@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { tr } from "framer-motion/client";
 
 interface SwipeCardProps {
   id: string;
@@ -11,9 +12,12 @@ interface SwipeCardProps {
   description: string;
   imageUrl: string;
   onSwipe: (direction: "left" | "right" | "up", id: string) => void;
+  setBinButton: (value: boolean) => void;
+  setSuperlikeButton: (value: boolean) => void;
+  setLikeButton: (value: boolean) => void;
 }
 
-export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: SwipeCardProps) {
+export function SwipeCard({ id, title, url, description, imageUrl, onSwipe, setBinButton, setSuperlikeButton, setLikeButton }: SwipeCardProps) {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | "up" | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -33,15 +37,27 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe }: Sw
             offsetX.current > 0
               ? `0 0 20px rgba(255, 75, 75, ${Math.min(absX / 200, 0.8)})`
               : `0 0 20px rgba(156, 163, 175, ${Math.min(absX / 200, 0.8)})`;
+              setBinButton(offsetX.current < 0);
+              setLikeButton(offsetX.current > 0);
+              setSuperlikeButton(false);
         } else if (offsetY.current < 0) {
           cardRef.current.style.boxShadow = `0 0 20px rgba(75, 123, 255, ${Math.min(absY / 200, 0.8)})`;
+          setBinButton(false);
+          setLikeButton(false);
+          setSuperlikeButton(true);
         } else {
           cardRef.current.style.boxShadow =
             "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+          setBinButton(true);
+          setLikeButton(true);
+          setSuperlikeButton(true);
         }
       } else {
         cardRef.current.style.boxShadow =
           "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)";
+        setBinButton(true);
+        setLikeButton(true);
+        setSuperlikeButton(true);
       }
 
       cardRef.current.style.transform = `translate(${offsetX.current}px, ${offsetY.current}px) rotate(${

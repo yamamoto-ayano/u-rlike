@@ -39,6 +39,10 @@ export default function Home() {
   const [memo, setMemo] = useState("")
   const [currentCardNo, setCurrentCardNo] = useState(0)
 
+  const [binButton, setBinButton] = useState(true)
+  const [superlikeButton, setSuperlikeButton] = useState(true)
+  const [likeButton, setLikeButton] = useState(true)
+
   // スワイプ処理
   const handleSwipe = (direction: "left" | "right" | "up", id: string) => {
     console.log(`Swiped ${direction} on card ${id}`)
@@ -48,6 +52,11 @@ export default function Home() {
 
     // 次のカードに移動
     setCurrentCardNo((prev) => (prev + 1) % 2)
+
+    // ボタンの表示をリセット
+    setBinButton(true)
+    setSuperlikeButton(true)
+    setLikeButton(true)
 
     // 実際のアプリではここでデータを更新する処理を行う
     if (direction === "right") {
@@ -96,6 +105,9 @@ export default function Home() {
                       description={card0Card.description}
                       imageUrl={card0Card.imageUrl}
                       onSwipe={handleSwipe}
+                      setBinButton={setBinButton}
+                      setSuperlikeButton={setSuperlikeButton}
+                      setLikeButton={setLikeButton}
                     />
                   </div>
                 )}
@@ -113,6 +125,9 @@ export default function Home() {
                       description={card1Card.description}
                       imageUrl={card1Card.imageUrl}
                       onSwipe={handleSwipe}
+                      setBinButton={setBinButton}
+                      setSuperlikeButton={setSuperlikeButton}
+                      setLikeButton={setLikeButton}
                     />
                   </div>
                 )}
@@ -126,6 +141,7 @@ export default function Home() {
                     size="icon"
                     className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-dislike hover:bg-dislike/10 hover:border-dislike"
                     onClick={() => handleSwipe("left", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                    style={{ visibility: binButton ? "visible" : "hidden" }}
                   >
                     <Trash2 className="h-8 w-8 text-dislike" />
                   </Button>
@@ -134,6 +150,7 @@ export default function Home() {
                     size="icon"
                     className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-superlike hover:bg-superlike/10 hover:border-superlike"
                     onClick={() => handleSwipe("up", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                    style={{ visibility: superlikeButton ? "visible" : "hidden" }}
                   >
                     <Star className="h-8 w-8 text-superlike" />
                   </Button>
@@ -142,6 +159,7 @@ export default function Home() {
                     size="icon"
                     className="rounded-full h-16 w-16 bg-white shadow-md border-2 border-like hover:bg-like/10 hover:border-like"
                     onClick={() => handleSwipe("right", currentCardNo === 0 ? card0Card.id : card1Card.id)}
+                    style={{ visibility: likeButton ? "visible" : "hidden" }}
                   >
                     <ThumbsUp className="h-8 w-8 text-like" />
                   </Button>
