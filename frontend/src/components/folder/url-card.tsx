@@ -17,7 +17,7 @@ interface UrlCardProps {
   title: string
   url: string
   description: string
-  imageUrl: string
+  image: string
   liked?: boolean
   onLike?: (id: string) => void
   draggable?: boolean
@@ -30,7 +30,7 @@ export function UrlCard({
   title,
   url,
   description,
-  imageUrl,
+  image,
   liked = false,
   onLike,
   draggable = false,
@@ -92,7 +92,7 @@ export function UrlCard({
     >
       <div className="relative w-24 h-24 flex-shrink-0">
         <Image
-          src={imageUrl || "/placeholder.svg?height=96&width=96"}
+          src={image || "/placeholder.svg?height=96&width=96"}
           alt={title}
           fill
           className="object-cover rounded-md"

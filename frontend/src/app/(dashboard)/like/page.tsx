@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { UrlCard } from "@/components/folder/url-card"
 import { FolderDropArea } from "@/components/folder/folder-drop-area"
 
@@ -34,6 +34,27 @@ const sampleLikedItems = [
   },
 ]
 
+type LikeAPI = {
+  status: number
+  message: string
+  data: {
+    id: string
+    title: string
+    url: string
+    description: string
+    image: string
+  }[]
+}
+
+type FolderAPI = {
+  status: number
+  message: string
+  data: {
+    id: string
+    name: string
+    count: number
+  }[]
+}
 
 const sampleFolders = [
   { id: "folder1", name: "フォルダ" },
@@ -42,9 +63,44 @@ const sampleFolders = [
 ]
 
 export default function LikePage() {
-  const [likedItems, setLikedItems] = useState(sampleLikedItems)
-  const [folders, setFolders] = useState(sampleFolders)
+  const [likedItems, setLikedItems] = useState<LikeAPI["data"]>([])
+  const [folders, setFolders] = useState<FolderAPI["data"]>([])
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
+  const [isLoading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchLikedItems = async () => {
+      try {
+        const response = await fetch("http://localhost:8787/likes")
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const data = await response.json()
+        setLikedItems(data.data)
+
+        const folderResponse = await fetch("http://localhost:8787/bookmarks")
+        if (!folderResponse.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const folderData = await folderResponse.json()
+        setFolders(folderData.data)
+      } catch (error) {
+        console.error("Error fetching liked items:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLikedItems()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Loading...</p>
+      </div>
+    )
+  }
 
   const handleLike = (id: string) => {
     setLikedItems((prev) => prev.map((item) => (item.id === id ? { ...item, liked: !item.liked } : item)))
@@ -91,8 +147,8 @@ export default function LikePage() {
                   title={item.title}
                   url={item.url}
                   description={item.description}
-                  imageUrl={item.imageUrl}
-                  liked={item.liked}
+                  image={item.image}
+                  liked={true}
                   onLike={handleLike}
                   draggable={true}
                   onDragStart={handleDragStart}

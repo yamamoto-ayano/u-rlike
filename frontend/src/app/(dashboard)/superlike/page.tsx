@@ -1,48 +1,72 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+
+import { useEffect, useState } from "react"
 import { UrlCard } from "@/components/folder/url-card"
 import { FolderDropArea } from "@/components/folder/folder-drop-area"
 
-// サンプルデータ
-const sampleSuperlikedItems = [
-  {
-    id: "1",
-    title: "Next.js 14の新機能まとめ",
-    url: "https://nextjs.org",
-    description: "Server Componentsの改善やApp Routerの安定化など、Next.js 14の主要な変更点を紹介します。",
-    imageUrl: "/placeholder.svg?height=96&width=96",
-    liked: true,
-  },
-  {
-    id: "2",
-    title: "TypeScriptの高度な型システム入門",
-    url: "https://typescript-jp.dev",
-    description: "条件型、マップ型、テンプレートリテラル型など、TypeScriptの高度な型機能について解説します。",
-    imageUrl: "/placeholder.svg?height=96&width=96",
-    liked: true,
-  },
-  {
-    id: "3",
-    title: "React Server Componentsとは何か",
-    url: "https://react.dev/blog/server-components",
-    description: "Reactの新しいパラダイム、Server Componentsの概念と実装方法について詳しく解説します。",
-    imageUrl: "/placeholder.svg?height=96&width=96",
-    liked: true,
-  },
-]
+type SuperLikeAPI = {
+  status: number
+  message: string
+  data: {
+    id: string
+    title: string
+    url: string
+    description: string
+    image: string
+  }[]
+}
 
-const sampleFolders = [
-  { id: "folder1", name: "フォルダ" },
-  { id: "folder2", name: "HP仕事" },
-  { id: "folder3", name: "LiT!" },
-]
+type FolderAPI = {
+  status: number
+  message: string
+  data: {
+    id: string
+    name: string
+    count: number
+  }[]
+}
 
-export default function SuperlikePage() {
-  const [superlikedItems, setSuperlikedItems] = useState(sampleSuperlikedItems)
-  const [folders, setFolders] = useState(sampleFolders)
+export default function LikePage() {
+  const [superlikedItems, setSuperlikedItems] = useState<SuperLikeAPI["data"]>([])
+  const [folders, setFolders] = useState<FolderAPI["data"]>([])
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
+  const [isLoading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchLikedItems = async () => {
+      try {
+        const response = await fetch("http://localhost:8787/superlikes")
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const data = await response.json()
+        setSuperlikedItems(data.data)
+
+        const folderResponse = await fetch("http://localhost:8787/bookmarks")
+        if (!folderResponse.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const folderData = await folderResponse.json()
+        setFolders(folderData.data)
+      } catch (error) {
+        console.error("Error fetching liked items:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLikedItems()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Loading...</p>
+      </div>
+    )
+  }
 
   const handleLike = (id: string) => {
     setSuperlikedItems((prev) => prev.map((item) => (item.id === id ? { ...item, liked: !item.liked } : item)))
@@ -89,8 +113,8 @@ export default function SuperlikePage() {
                   title={item.title}
                   url={item.url}
                   description={item.description}
-                  imageUrl={item.imageUrl}
-                  liked={item.liked}
+                  image={item.image}
+                  liked={true}
                   onLike={handleLike}
                   draggable={true}
                   onDragStart={handleDragStart}

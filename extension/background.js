@@ -4,7 +4,7 @@ chrome.history.onVisited.addListener((historyItem) => {
         if (tabs.length === 0) return;
 
 
-        chrome.tabs.captureVisibleTab(tabs[0].windowId, { format: "png" }, (image) => {
+        chrome.tabs.captureVisibleTab(tabs[0].windowId, { format: "jpeg", quality: 50 }, (image) => {
             if (chrome.runtime.lastError) {
                 return;
             }
@@ -16,7 +16,7 @@ chrome.history.onVisited.addListener((historyItem) => {
                 description: "",
                 timestamp: historyItem.lastVisitTime,
             };
-            fetch("http://localhost:5000/api/histories", {
+            fetch("http://localhost:8787/histories", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(sendData),
@@ -79,7 +79,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                         // timestamp: Date.now(),
                         memo: result[0].result,
                     };
-                    fetch("http://localhost:5000/api/bookmarks/default", {
+                    fetch("http://localhost:8787/bookmarks/default", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(sendData),

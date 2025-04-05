@@ -1,41 +1,75 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { SwipeCard } from "@/components/swipe/swipe-card"
 import { MemoInput } from "@/components/swipe/memo-input"
 import { Button } from "@/components/ui/button"
 import { Trash2, ThumbsUp, Star } from "lucide-react"
 import { HistoryList } from "@/components/swipe/historyList"
+import useSWR from "swr"
 
 // サンプルデータ
-const sampleHistoryItems = [
-  {
-    id: "1",
-    title: "今熱い！！ Hono入門で爆速デプロイ🔥",
-    url: "https://hono.dev",
-    description:
-      "JavaScriptフレームワーク界隈でここ最近 Hono が熱いです。弊社でもバックエンドFWの一つとしてHonoに注目しています。",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "2",
-    title: "React Hooksの基本と応用",
-    url: "https://react.dev",
-    description: "Reactの関数コンポーネントでステート管理を行うためのHooksについて解説します。",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: "3",
-    title: "Next.js 14の新機能まとめ",
-    url: "https://nextjs.org",
-    description: "Server Componentsの改善やApp Routerの安定化など、Next.js 14の主要な変更点を紹介します。",
-    imageUrl: "/placeholder.svg?height=200&width=400",
-  },
-  // 以下、重複データはそのまま
-]
+// const sampleHistoryItems = [
+//   {
+//     id: "1",
+//     title: "今熱い！！ Hono入門で爆速デプロイ🔥",
+//     url: "https://hono.dev",
+//     description:
+//       "JavaScriptフレームワーク界隈でここ最近 Hono が熱いです。弊社でもバックエンドFWの一つとしてHonoに注目しています。",
+//     imageUrl: "/placeholder.svg?height=200&width=400",
+//   },
+//   {
+//     id: "2",
+//     title: "React Hooksの基本と応用",
+//     url: "https://react.dev",
+//     description: "Reactの関数コンポーネントでステート管理を行うためのHooksについて解説します。",
+//     imageUrl: "/placeholder.svg?height=200&width=400",
+//   },
+//   {
+//     id: "3",
+//     title: "Next.js 14の新機能まとめ",
+//     url: "https://nextjs.org",
+//     description: "Server Componentsの改善やApp Routerの安定化など、Next.js 14の主要な変更点を紹介します。",
+//     imageUrl: "/placeholder.svg?height=200&width=400",
+//   },
+//   // 以下、重複データはそのまま
+// ]
+
+
+type historyAPI = {
+  status: number,
+  message: string,
+  data: {
+    id: string,
+    title: string,
+    url: string,
+    description: string,
+    image: string,
+  }[]
+}
 
 export default function Home() {
-  const [historyItems, setHistoryItems] = useState(sampleHistoryItems)
+  const [historyItems, setHistoryItems] = useState<historyAPI["data"]>([])
+  const [isLoading, setLoading] = useState(true)
+  useEffect(() => {
+    console.log("Fetching history items...")
+    const fetchHistoryItems = async () => {
+      try {
+        const response = await fetch("http://localhost:8787/histories")
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        const data: historyAPI = await response.json()
+        setHistoryItems(data.data)
+        setLoading(false)
+      } catch (error) {
+        console.error("Error fetching history items:", error)
+      }
+    }
+
+    fetchHistoryItems()
+  }, [])
+
   const [memo, setMemo] = useState("")
   const [currentCardNo, setCurrentCardNo] = useState(0)
 
@@ -43,12 +77,32 @@ export default function Home() {
   const [superlikeButton, setSuperlikeButton] = useState(true)
   const [likeButton, setLikeButton] = useState(true)
 
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  }
+
   // スワイプ処理
   const handleSwipe = (direction: "left" | "right" | "up", id: string) => {
     console.log(`Swiped ${direction} on card ${id}`)
 
     // 履歴から削除
     setHistoryItems((prev) => prev.filter((item) => item.id !== id));
+    fetch(`http://localhost:8787/histories/${id}`, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        return response.json()
+      })
+      .then((data) => {
+        console.log("Deleted item:", data)
+      })
+      .catch((error) => {
+        console.error("Error deleting item:", error)
+      })
 
     // 次のカードに移動
     setCurrentCardNo((prev) => (prev + 1) % 2)
@@ -59,12 +113,32 @@ export default function Home() {
     setLikeButton(true)
 
     // 実際のアプリではここでデータを更新する処理を行う
-    if (direction === "right") {
-      // いいね処理
-    } else if (direction === "left") {
-      // 削除処理
-    } else if (direction === "up") {
-      // スーパーライク処理
+    if (direction === "right" || direction === "up") {
+      // いいねやスワイプアップの処理
+      fetch(`http://localhost:8787/${direction === 'right' ? 'likes' : 'superlikes'}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: historyItems[currentCardNo].title,
+          url: historyItems[currentCardNo].url,
+          description: historyItems[currentCardNo].description,
+          image: historyItems[currentCardNo].image,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok")
+          }
+          return response.json()
+        })
+        .then((data) => {
+          console.log("Swiped item:", data)
+        })
+        .catch((error) => {
+          console.error("Error swiping item:", error)
+      })
     }
   }
 
@@ -103,7 +177,7 @@ export default function Home() {
                       title={card0Card.title}
                       url={card0Card.url}
                       description={card0Card.description}
-                      imageUrl={card0Card.imageUrl}
+                      imageUrl={card0Card.image}
                       onSwipe={handleSwipe}
                       setBinButton={setBinButton}
                       setSuperlikeButton={setSuperlikeButton}
@@ -123,7 +197,7 @@ export default function Home() {
                       title={card1Card.title}
                       url={card1Card.url}
                       description={card1Card.description}
-                      imageUrl={card1Card.imageUrl}
+                      imageUrl={card1Card.image}
                       onSwipe={handleSwipe}
                       setBinButton={setBinButton}
                       setSuperlikeButton={setSuperlikeButton}

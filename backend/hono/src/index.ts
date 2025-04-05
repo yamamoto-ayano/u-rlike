@@ -289,6 +289,174 @@
             "message": "delete edge successful"
         }
         ```
+- GET /likes
+    - いいねした履歴を取得するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "get likes successful",
+            "data": [
+                {
+                    "id": "string",
+                    "url": "string",
+                    "title": "string",
+                    "description": "string",
+                    "image": "string"
+                },
+                ...
+            ]
+        }
+        ```
+- POST /likes
+    - いいねを追加するエンドポイント
+    - リクエスト
+        - application/json
+        
+        ```jsx
+        {
+            "url": "string",
+            "title": "string",
+            "description": "string",
+            "image": "string"
+        }
+        ```
+        
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "add like successful"
+        }
+        ```
+- DELETE /likes/<like_id>
+    - いいねを削除するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "delete like successful"
+        }
+        ```
+- PUT /likes/<like_id>
+    - いいねのメモを編集するエンドポイント
+    - リクエスト
+        - application/json
+        
+        ```jsx
+        {
+            "memo": "string"
+        }
+        ```
+        
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "update like successful"
+        }
+        ```
+- GET /likes/<like_id>
+    - いいねの詳細を取得するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "get like successful",
+            "data": {
+                "id": "string",
+                "url": "string",
+                "title": "string",
+                "description": "string",
+                "image": "string"
+            }
+        }
+        ```
+- GET /superlikes
+    - スーパいいねした履歴を取得するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "get superlikes successful",
+            "data": [
+                {
+                    "id": "string",
+                    "url": "string",
+                    "title": "string",
+                    "description": "string",
+                    "image": "string"
+                },
+                ...
+            ]
+        }
+        ```
+- POST /superlikes
+    - スーパいいねを追加するエンドポイント
+    - リクエスト
+        - application/json
+        
+        ```jsx
+        {
+            "url": "string",
+            "title": "string",
+            "description": "string",
+            "image": "string"
+        }
+        ```
+        
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "add superlike successful"
+        }
+        ```
+- DELETE /superlikes/<superlike_id>
+    - スーパいいねを削除するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "delete superlike successful"
+        }
+        ```
+- PUT /superlikes/<superlike_id>
+    - スーパいいねのメモを編集するエンドポイント
+    - リクエスト
+        - application/json
+        
+        ```jsx
+        {
+            "memo": "string"
+        }
+        ```
+        
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "update superlike successful"
+        }
+        ```
 */
 
 import { Hono } from 'hono'
@@ -350,10 +518,28 @@ app.get('/histories', async (c) => {
     return c.json({
       status: 200,
       message: "get histories successful",
-      data: histories.map(({ id, checked, createdAt, ...rest }) => rest)
+      data: histories.map(({ checked, createdAt, ...rest }) => rest)
     })
   } catch (error) {
     return c.json({ status: 500, message: "Failed to get histories" }, 500)
+  }
+})
+
+// 履歴を削除する
+app.delete('/histories/:historyId', async (c) => {
+  try {
+    const historyId = c.req.param('historyId')
+
+    await prisma.history.delete({
+      where: { id: historyId }
+    })
+
+    return c.json({
+      status: 200,
+      message: "delete history successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to delete history" }, 500)
   }
 })
 
@@ -630,5 +816,191 @@ app.delete('/bookmarks/:folderId/edges/:edgeId', async (c) => {
     return c.json({ status: 500, message: "Failed to delete edge" }, 500)
   }
 })
+
+// いいね関連のAPIの実装
+// いいね一覧を取得
+app.get('/likes', async (c) => {
+  try {
+    const likes = await prisma.like.findMany()
+
+    return c.json({
+      status: 200,
+      message: "get likes successful",
+      data: likes
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to get likes" }, 500)
+  }
+})
+
+// いいねを追加
+app.post('/likes', async (c) => {
+  try {
+    const { url, title, description, image } = await c.req.json()
+
+    await prisma.like.create({
+      data: {
+        url,
+        title,
+        description,
+        image
+      }
+    })
+
+    return c.json({
+      status: 200,
+      message: "add like successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to add like" }, 500)
+  }
+})
+// いいねを削除
+app.delete('/likes/:likeId', async (c) => {
+  try {
+    const likeId = c.req.param('likeId')
+
+    await prisma.like.delete({
+      where: { id: likeId }
+    })
+
+    return c.json({
+      status: 200,
+      message: "delete like successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to delete like" }, 500)
+  }
+})
+// いいねを編集
+app.put('/likes/:likeId', async (c) => {
+  try {
+    const likeId = c.req.param('likeId')
+    const { memo } = await c.req.json()
+
+    await prisma.like.update({
+      where: { id: likeId },
+      data: { memo }
+    })
+
+    return c.json({
+      status: 200,
+      message: "update like successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to update like" }, 500)
+  }
+})
+
+// いいねの詳細を取得
+app.get('/likes/:likeId', async (c) => {
+  try {
+    const likeId = c.req.param('likeId')
+
+    const like = await prisma.like.findUnique({
+      where: { id: likeId }
+    })
+
+    return c.json({
+      status: 200,
+      message: "get like successful",
+      data: like
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to get like" }, 500)
+  }
+})
+// スーパいいね関連のAPIの実装
+// スーパいいね一覧を取得
+app.get('/superlikes', async (c) => {
+  try {
+    const superlikes = await prisma.superlike.findMany()
+
+    return c.json({
+      status: 200,
+      message: "get superlikes successful",
+      data: superlikes
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to get superlikes" }, 500)
+  }
+})
+// スーパいいねを追加
+app.post('/superlikes', async (c) => {
+  try {
+    const { url, title, description, image } = await c.req.json()
+
+    await prisma.superlike.create({
+      data: {
+        url,
+        title,
+        description,
+        image
+      }
+    })
+
+    return c.json({
+      status: 200,
+      message: "add superlike successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to add superlike" }, 500)
+  }
+})
+// スーパいいねを削除
+app.delete('/superlikes/:superlikeId', async (c) => {
+  try {
+    const superlikeId = c.req.param('superlikeId')
+
+    await prisma.superlike.delete({
+      where: { id: superlikeId }
+    })
+
+    return c.json({
+      status: 200,
+      message: "delete superlike successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to delete superlike" }, 500)
+  }
+})
+// スーパいいねを編集
+app.put('/superlikes/:superlikeId', async (c) => {
+  try {
+    const superlikeId = c.req.param('superlikeId')
+    const { memo } = await c.req.json()
+
+    await prisma.superlike.update({
+      where: { id: superlikeId },
+      data: { memo }
+    })
+
+    return c.json({
+      status: 200,
+      message: "update superlike successful"
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to update superlike" }, 500)
+  }
+})
+// スーパいいねの詳細を取得
+app.get('/superlikes/:superlikeId', async (c) => {
+  try {
+    const superlikeId = c.req.param('superlikeId')
+
+    const superlike = await prisma.superlike.findUnique({
+      where: { id: superlikeId }
+    })
+
+    return c.json({
+      status: 200,
+      message: "get superlike successful",
+      data: superlike
+    })
+  } catch (error) {
+    return c.json({ status: 500, message: "Failed to get superlike" }, 500)
+  }
+})
+
 
 export default app
