@@ -33,6 +33,9 @@ const folderNav = {
 export const metadata: Metadata = {
   title: "U'RLike",
   description: "お気に入りのURLを保存して、あなたの好きなものを見つけよう！",
+  icons: {
+    icon: "icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -42,9 +45,6 @@ export default function RootLayout({
 }>) {
   return (
       <html lang="ja">
-        <Head>
-          <link rel="icon" href="frontend/public/icon.png" />
-        </Head>
         <body className="overflow-hidden">
           <ClientProviders>
             <Flex className="flex-col w-full ">
