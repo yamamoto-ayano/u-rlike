@@ -21,7 +21,7 @@ export default function FolderPage() {
   const { isOpen, closeModal ,openModal} = useModal()
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full">
       <main className="flex-1 p-6 overflow-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">フォルダ</h2>
