@@ -47,15 +47,15 @@ export default function RootLayout({
       <html lang="ja">
         <body className="overflow-hidden">
           <ClientProviders>
-            <Flex className="flex-col w-full ">
+            <Flex className="flex-col w-full h-dvh">
               <Flex className="flex-row w-full">
               <Header/>
               </Flex>
-              <Flex className="flex-row w-full">
-                <Flex className="flex-row items-start justify-start p-4 "> 
+              <Flex className="flex-row w-full grow-1">
+                <Flex className="flex-row items-start justify-start lg:p-4 h-full">
                   <Sidebar />
                 </Flex>
-                <Flex className="w-full">
+                <Flex className="w-full h-full">
                   {children}
                   <FolderModalWrapper />
                 </Flex>
