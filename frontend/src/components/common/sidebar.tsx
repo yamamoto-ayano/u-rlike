@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useSidebar } from "@/components/common/SidebarContext"
 
 interface SidebarProps {
   className?: string
@@ -12,7 +13,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname()
-
+  const { subItems } = useSidebar()
   const navItems = [
     { name: "HOME", path: "/" },
     { name: "like", path: "/like" },
@@ -22,10 +23,7 @@ export function Sidebar({ className }: SidebarProps) {
       name: "フォルダ",
       path: "/folder",
       isFolder: true,
-      subItems: [
-        { name: "HP仕事", path: "/folder/hp-work" },
-        { name: "LiT!", path: "/folder/lit" },
-      ],
+      subItems,
     },
   ]
 
