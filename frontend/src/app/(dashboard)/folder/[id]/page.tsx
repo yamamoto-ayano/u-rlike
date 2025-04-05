@@ -455,7 +455,7 @@ const handleEdgeDelete = useCallback(
   
  {/* 右側のカードリスト */}
  <aside
-  className="w-60 bg-[#fafafa] border-l px-3 py-4 overflow-y-auto"
+  className="w-50 bg-[#fafafa] border-l px-3 py-4 overflow-y-auto"
   onDragOver={(e) => e.preventDefault()} // ドロップを許可
   onDrop={(e) => {
     const nodeId = e.dataTransfer.getData('text/plain');
@@ -473,6 +473,7 @@ const handleEdgeDelete = useCallback(
 >
    {/* カードリストのスタイル */}
   {likedItems.map((item) => (
+    <div className="h-22 transform scale-65 flex justify-center">
     <UrlCard
       key={item.id}
       {...item}
@@ -480,8 +481,9 @@ const handleEdgeDelete = useCallback(
       onShare={handleShare}
       draggable={true}
       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)} // ドラッグ開始時にIDを設定
-      className="w-53 h-30"
+      className="w-60 h-30"
     />
+    </div>
   ))}
 </aside>
     </main>
