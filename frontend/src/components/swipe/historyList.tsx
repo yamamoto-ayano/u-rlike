@@ -16,7 +16,7 @@ type HistoryListProps = {
 
 export const HistoryList = ({ items }: HistoryListProps) => {
   return (
-    <div className="bg-white rounded-lg shadow p-4 overflow-auto" style={{ height: "calc(100vh - 250px)", marginBottom: "16px" }}>
+    <div className="bg-white rounded-lg shadow p-4 overflow-auto hidden lg:block" style={{ height: "calc(100vh - 250px)", marginBottom: "16px" }}>
         <h2 className="text-2xl font-bold mb-4">履歴</h2>
         <div className="space-y-2">
           {items.map((item) => (
