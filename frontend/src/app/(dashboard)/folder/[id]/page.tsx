@@ -406,7 +406,7 @@ const handleEdgeDelete = useCallback(
 
   // ノードのドラッグ処理
   return (
-    <main className="h-screen w-full flex bg-white">  
+    <main className="h-full w-full flex bg-white">  
       {/* 中央のReact Flow */}
       <section className="flex-1 p-6 overflow-auto">
         <h2 className="text-xl font-bold mb-4">フォルダ: {id}</h2>
