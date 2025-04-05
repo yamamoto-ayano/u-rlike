@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/common/sidebar";
 import { Flex } from "@/components/ui/flex";
 
 
+import { FolderModalWrapper } from "@/components/common/FolderModalWrapper";
 import ClientProviders  from "@/components/common/clientWrapper";
 
 const folderNav = {
@@ -52,6 +53,7 @@ export default function RootLayout({
                 </Flex>
                 <Flex className="w-full">
                   {children}
+                  <FolderModalWrapper />
                 </Flex>
               </Flex>
             </Flex>

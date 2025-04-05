@@ -32,7 +32,6 @@ export default function FolderPage() {
                 新規フォルダ
               </Button>
             </DialogTrigger>
-
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>新規フォルダを作成</DialogTitle>
