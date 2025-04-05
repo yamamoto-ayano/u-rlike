@@ -7,10 +7,12 @@ import { SidebarProvider } from "@/components/common/SidebarContext";
 
 export default function ClientProviders({ children }: { children: ReactNode }) {
   return (
-  <SidebarProvider>
-    <ModalProvider>
-      {children}
-    </ModalProvider>
-  </SidebarProvider>
+    <div className="flex flex-col h-screen z-10000000">
+      <SidebarProvider>
+        <ModalProvider>
+          {children}
+        </ModalProvider>
+      </SidebarProvider>
+  </div>
   )
 }

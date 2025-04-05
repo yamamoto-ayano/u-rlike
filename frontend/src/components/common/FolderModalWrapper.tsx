@@ -14,13 +14,15 @@ export const FolderModalWrapper = () => {
   const { isOpen, closeModal } = useModal();
 
   return (
-    <Dialog open={isOpen} onOpenChange={closeModal}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>新規フォルダを作成</DialogTitle>
-        </DialogHeader>
-        <NewFolderForm onClose={closeModal} />
-      </DialogContent>
-    </Dialog>
+    <div>
+        <Dialog open={isOpen} onOpenChange={closeModal} >
+        <DialogContent>
+            <DialogHeader>
+            <DialogTitle>新規フォルダを作成</DialogTitle>
+            </DialogHeader>
+            <NewFolderForm onClose={closeModal} />
+        </DialogContent>
+        </Dialog>
+    </div>
   );
 };

@@ -30,7 +30,7 @@ export function NewFolderForm({ onClose }: NewFolderFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded shadow bg-white">
+    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded shadow bg-white ">
       <div>
         <label className="block text-sm font-medium mb-1">フォルダ名</label>
         <Input
