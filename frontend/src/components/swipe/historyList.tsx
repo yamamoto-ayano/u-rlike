@@ -1,7 +1,6 @@
 // components/swipe/history-list.tsx
 "use client"
 
-import Image from "next/image"
 
 type HistoryItem = {
   id: string
@@ -26,7 +25,7 @@ export const HistoryList = ({ items }: HistoryListProps) => {
                 className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded"
                
             >
-              <Image
+              <img
                 src={`https://www.google.com/s2/favicons?sz=64&domain_url=${item.url}`}
                 alt="favicon"
                 className="w-6 h-6"

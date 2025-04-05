@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Plus } from "lucide-react"
+import { Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/common/SidebarContext"
@@ -16,6 +16,8 @@ export function Sidebar({ className }: SidebarProps) {
   const { isOpen, closeModal, openModal } = useModal()
   const pathname = usePathname()
   const { subItems } = useSidebar()
+  const { isSidebarOpen, closeSidebar } = useSidebar()
+
   const navItems = [
     { name: "HOME", path: "/" },
     { name: "like", path: "/like" },
@@ -30,51 +32,71 @@ export function Sidebar({ className }: SidebarProps) {
   ]
 
   return (
-    <div className={cn("flex flex-col p-4 border-r w-64 ", className)}>
-      <nav className="space-y-1 flex-1">
-        {navItems.map((item) => (
-          <div key={item.path}>
-            <Link
-              href={item.path}
-              className={cn(
-                "flex items-center w-full px-2 py-2 text-lg font-bold border-b",
-                pathname === item.path ? "text-primary" : "text-foreground",
+    <>
+      {/* モバイル用サイドバー（オーバーレイ） */}
+      <div className={cn(
+        "fixed inset-0 z-30 bg-black/50 transition-opacity lg:hidden",
+        isSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      )} onClick={closeSidebar} />
+
+      <div className={cn(
+        "fixed top-0 left-0 z-40 h-full bg-white w-64 p-4 transform transition-transform lg:relative lg:translate-x-0 lg:flex",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full",
+        className
+      )}>
+        {/* 閉じるボタン（モバイル用） */}
+        <div className="flex justify-end lg:hidden">
+          <button onClick={closeSidebar}>
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <nav className="space-y-1 flex-1">
+          {navItems.map((item) => (
+            <div key={item.path}>
+              <Link
+                href={item.path}
+                className={cn(
+                  "flex items-center w-full px-2 py-2 text-lg font-bold border-b",
+                  pathname === item.path ? "text-primary" : "text-foreground",
+                )}
+                onClick={closeSidebar}
+              >
+                {item.name}
+              </Link>
+
+              {item.isFolder && item.subItems && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <Link
+                      key={subItem.path}
+                      href={subItem.path}
+                      className={cn(
+                        "flex items-center w-full px-2 py-2 text-lg font-bold border-b",
+                        pathname === subItem.path ? "text-primary" : "text-muted-foreground",
+                      )}
+                      onClick={closeSidebar}
+                    >
+                      <span className="mr-2">▶</span> {subItem.name}
+                    </Link>
+                  ))}
+                </div>
               )}
-            >
-              {item.name}
-            </Link>
+            </div>
+          ))}
+        </nav>
 
-            {item.isFolder && item.subItems && (
-              <div className="ml-4 mt-1 space-y-1">
-                {item.subItems.map((subItem) => (
-                  <Link
-                    key={subItem.path}
-                    href={subItem.path}
-                    className={cn(
-                      "flex items-center w-full px-2 py-2 text-lg font-bold border-b",
-                      pathname === subItem.path ? "text-primary" : "text-muted-foreground",
-                    )}
-                  >
-                    <span className="mr-2">▶</span> {subItem.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </nav>
-
-      <Button 
-        variant="ghost" 
-        className="mt-auto w-full justify-center p-2 rounded-full"
-        onClick={() => {
-          openModal();
-        }
-        }
-      >
-        <Plus className="h-8 w-8" />
-      </Button>
-    </div>
+        <Button 
+          variant="ghost" 
+          className="mt-auto w-full justify-center p-2 rounded-full"
+          onClick={() => {
+            openModal()
+            closeSidebar()
+          }}
+        >
+          <Plus className="h-8 w-8" />
+        </Button>
+      </div>
+    </>
   )
 }
-
