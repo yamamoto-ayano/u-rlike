@@ -35,21 +35,18 @@ export function Sidebar({ className }: SidebarProps) {
     <>
       {/* モバイル用サイドバー（オーバーレイ） */}
       <div className={cn(
-        "fixed inset-0 z-30 bg-black/50 transition-opacity lg:hidden",
+        "fixed inset-0 z-200 bg-black/50 transition-opacity lg:hidden",
         isSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible"
       )} onClick={closeSidebar} />
 
       <div className={cn(
         // PCもモバイルも縦レイアウト。高さは画面いっぱいに
-        "fixed top-8px left-0 z-40   bg-white w-64 p-4 transform transition-transform lg:relative lg:translate-x-0 flex flex-col",
+        "fixed top-8px left-0 z-1000   bg-white w-64 p-4 transform transition-transform lg:relative lg:translate-x-0 flex flex-col",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full",
         className
       )}>
         {/* 閉じるボタン（モバイル用） */}
         <div className="flex justify-end lg:hidden">
-          <button onClick={closeSidebar}>
-            <X className="h-6 w-6" />
-          </button>
         </div>
 
         <nav className="space-y-1 flex-1">
