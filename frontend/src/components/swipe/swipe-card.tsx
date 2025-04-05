@@ -190,6 +190,7 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe, setB
             alt={title}
             fill
             className="object-cover"
+            style={{pointerEvents: "none"}}
           />
         </div>
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
@@ -204,10 +205,10 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe, setB
       </div>
 
       <div className="p-4">
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
+        <h3 className="text-xl font-bold mb-2 whitespace-nowrap">{title}</h3>
         <p className="text-sm text-gray-600 mb-4">{description}</p>
         <p className="text-xs text-gray-500">最終更新日: 2025年02月03日 投稿日: 2024年12月27日</p>
-        <a className="text-sm mt-4 block text-blue-900" href={url}>{url}</a>
+        <a className="text-sm mt-4 block text-blue-900 whitespace-nowrap" href={url}>{url}</a>
       </div>
     </div>
   );

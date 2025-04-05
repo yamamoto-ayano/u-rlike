@@ -7,7 +7,7 @@ type HistoryItem = {
   title: string
   url: string
   description: string
-  imageUrl: string
+  image: string
 }
 
 type HistoryListProps = {
