@@ -6,12 +6,14 @@ import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useSidebar } from "@/components/common/SidebarContext"
+import { useModal } from "@/components/folder/FolderFormContext"
 
 interface SidebarProps {
   className?: string
 }
 
 export function Sidebar({ className }: SidebarProps) {
+  const { isOpen, closeModal, openModal } = useModal()
   const pathname = usePathname()
   const { subItems } = useSidebar()
   const navItems = [
@@ -62,7 +64,14 @@ export function Sidebar({ className }: SidebarProps) {
         ))}
       </nav>
 
-      <Button variant="ghost" className="mt-auto w-full justify-center p-2 rounded-full">
+      <Button 
+        variant="ghost" 
+        className="mt-auto w-full justify-center p-2 rounded-full"
+        onClick={() => {
+          openModal();
+        }
+        }
+      >
         <Plus className="h-8 w-8" />
       </Button>
     </div>
