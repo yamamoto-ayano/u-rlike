@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "History Logger",
+  "version": "1.0",
+  "permissions": ["history", "activeTab", "scripting", "tabs", "contextMenus"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "http://localhost:5000/",
+    "<all_urls>"
+  ]
+}
