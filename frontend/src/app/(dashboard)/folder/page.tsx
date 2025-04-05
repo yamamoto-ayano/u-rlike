@@ -5,17 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Folder, Plus } from "lucide-react"
 import Link from "next/link"
 
+import { useSidebar } from "@/components/common/SidebarContext"
+
 // サンプルデータ
-const sampleFolders = [
-  { id: "hp-work", name: "HP仕事", count: 4 },
-  { id: "lit", name: "LiT!", count: 3 },
-  { id: "tech", name: "テクノロジー", count: 7 },
-  { id: "recipes", name: "レシピ", count: 5 },
-  { id: "travel", name: "旅行", count: 2 },
-]
+
 
 export default function FolderPage() {
-  const [folders, setFolders] = useState(sampleFolders)
+  const { subItems } = useSidebar()
 
   return (
     <div className="flex h-screen">
@@ -30,8 +26,8 @@ export default function FolderPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {folders.map((folder) => (
-              <Link key={folder.id} href={`/folder/${folder.id}`} className="block">
+            {subItems.map((folder) => (
+              <Link key={folder.id} href={`${folder.path}`} className="block">
                 <div className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-white">
                   <div className="flex items-center gap-3 mb-4">
                     <Folder className="h-8 w-8 text-primary" />
