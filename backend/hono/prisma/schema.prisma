@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -25,6 +25,7 @@ model BookmarkFolder {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   bookmarks   Bookmark[]
+  edges       Edges[]
 }
 
 model Bookmark {
@@ -38,4 +39,20 @@ model Bookmark {
   updatedAt   DateTime       @updatedAt
   folder      BookmarkFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId    String
+  BookmarkSource  Edges[] @relation("BookmarkSource")
+  BookmarkTarget  Edges[] @relation("BookmarkTarget")
+}
+
+model Edges {
+  id         String   @id @default(uuid())
+  sourceId   String
+  targetId   String
+  source     Bookmark @relation("BookmarkSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target     Bookmark @relation("BookmarkTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  folder     BookmarkFolder @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folderId   String
+  type       String
+  memo       String
 }
