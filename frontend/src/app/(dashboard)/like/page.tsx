@@ -101,7 +101,6 @@ export default function LikePage() {
                   imageUrl={item.imageUrl}
                   liked={item.liked}
                   onLike={handleLike}
-                  onShare={handleShare}
                   draggable={true}
                   onDragStart={handleDragStart}
                 />
