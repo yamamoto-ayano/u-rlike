@@ -13,10 +13,11 @@ import {
   Edge,
   Controls,
   MiniMap,
-} from '@xyflow/react'
+} from '@xyflow/react' // React Flowのインポート
 import { UrlCardNode } from '@/components/folder/url-card-node'
 import { useParams } from 'next/navigation'
 import '@xyflow/react/dist/style.css'
+import { UrlCard } from '@/components/folder/url-card'
 
 // カスタムエッジの型定義
 interface CustomEdgeData extends Edge<Record<string, unknown>, string | undefined> {
@@ -186,7 +187,6 @@ const sampleLikedItems = [
   },
 ]
 
-// フォルダ詳細ページ
 // フォルダのURLを取得して、URLカードを表示するページ
 export default function FolderDetailPage() {
   const { id } = useParams()
@@ -215,7 +215,6 @@ export default function FolderDetailPage() {
       .catch((err) => console.error('Error fetching graph data:', err))
   }, [id])
 
-
   // シェアボタンの処理
   const handleShare = (id: string, platform: 'line' | 'discord') => {
     console.log(`Sharing item ${id} on ${platform}`)
@@ -223,7 +222,7 @@ export default function FolderDetailPage() {
 
   // ドラッグスタートの処理
   const handleDragStart = (e: React.DragEvent, id: string) => {
-    e.dataTransfer.setData('text/plain', id)
+    e.dataTransfer.setData('text/plain', id) // ドラッグするアイテムのIDを設定
     setDraggedItemId(id)
   }
 
@@ -233,11 +232,11 @@ export default function FolderDetailPage() {
       likedItems.map((item, index) => ({
         id: item.id,
         type: 'urlCard',
-        position: { x: 100 + index * 250, y: 100 },
+        position: { x: 100 + index * 250, y: 100 }, // 初期位置を設定
         data: {
           ...item,
           onShare: handleShare,
-          onDragStart: (e: React.DragEvent) => handleDragStart(e, item.id),
+          onDragStart: (e: React.DragEvent) => handleDragStart(e, item.id), 
           draggable: true,
         },
       })),
@@ -277,13 +276,29 @@ export default function FolderDetailPage() {
     [setEdges]
   )
 
-  // ノードの削除処理
-  const nodeTypes = useMemo(
-    () => ({
-      urlCard: UrlCardNode,
-    }),
-    []
-  )
+// ノードの削除処理
+const nodeTypes = useMemo(
+  () => ({
+    urlCard: (nodeProps: any) => (
+      <div className="relative group">
+        {/* 削除ボタン */}
+        <button
+          className="absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          style={{ zIndex: 10 }}
+          onClick={() => setNodes((nds) => nds.filter((n) => n.id !== nodeProps.id))}
+        >
+          <img
+            src="/images/cancel.svg"
+            alt="削除"
+            className="w-4 h-4"
+          />
+        </button>
+        <UrlCardNode {...nodeProps} />
+      </div>
+    ),
+  }),
+  [setNodes]
+);
 
   // ノード変更時にAPIへ送信
   const handleNodesChange = useCallback(
@@ -298,6 +313,7 @@ export default function FolderDetailPage() {
           position: change.position,
         }))
 
+      // APIへ送信
       if (updatedNodes.length > 0) {
         fetch(`/api/folders/${id}/nodes/positions`, {
           method: 'POST',
@@ -332,11 +348,11 @@ const onConnect = useCallback(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEdge),
       });
-
+      // レスポンスをチェック
       if (!response.ok) {
         throw new Error(`Failed to create edge: ${response.statusText}`);
       }
-
+      // レスポンスデータを取得
       const result = await response.json();
       console.log('Edge created:', result);
     } catch (err) {
@@ -390,30 +406,84 @@ const handleEdgeDelete = useCallback(
 
   // ノードのドラッグ処理
   return (
-    <main className="h-screen w-full p-6">
-      <h2 className="text-2xl font-bold mb-6">フォルダ: {id}</h2>
-
-      <div className="h-[80vh] border rounded">
-        {/* React Flowのコンポーネント */}
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          fitView
-          minZoom={0.1}
-          maxZoom={2}
-          defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          panOnDrag={true}
-          zoomOnScroll={true}
-        >
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
-      </div>
+    <main className="h-screen w-full flex bg-white">  
+      {/* 中央のReact Flow */}
+      <section className="flex-1 p-6 overflow-auto">
+        <h2 className="text-xl font-bold mb-4">フォルダ: {id}</h2>
+        <div
+          className="h-[70vh] border rounded bg-white"
+          onDragOver={(e) => e.preventDefault()} // ドロップを許可
+          // ドロップ時の処理
+          onDrop={(e) => {
+          const nodeId = e.dataTransfer.getData('text/plain');
+          const bounds = e.currentTarget.getBoundingClientRect();
+          const position = {
+            x: e.clientX - bounds.left,
+            y: e.clientY - bounds.top,
+          }; // ドロップ位置を計算
+          setNodes((nds) => [
+          ...nds,
+      {
+        id: nodeId,
+        type: 'urlCard',
+        position,
+        data: likedItems.find((item) => item.id === nodeId) || {},
+      },
+    ]);
+  }}
+>
+  <ReactFlow
+    nodes={nodes}
+    edges={edges}
+    onNodesChange={handleNodesChange}
+    onEdgesChange={onEdgesChange}
+    onConnect={onConnect}
+    nodeTypes={nodeTypes}
+    edgeTypes={edgeTypes}
+    fitView
+    minZoom={0.1}
+    maxZoom={2}
+    defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+    panOnDrag={true}
+    zoomOnScroll={true}
+  >
+    <Controls />
+    <MiniMap />
+  </ReactFlow>
+</div>
+      </section>
+  
+ {/* 右側のカードリスト */}
+ <aside
+  className="w-60 bg-[#fafafa] border-l px-3 py-4 overflow-y-auto"
+  onDragOver={(e) => e.preventDefault()} // ドロップを許可
+  onDrop={(e) => {
+    const nodeId = e.dataTransfer.getData('text/plain');
+    const position = { x: e.clientX - 100, y: e.clientY - 100 }; // ドロップ位置を計算
+    setNodes((nds) => [
+      ...nds,
+      {
+        id: nodeId,
+        type: 'urlCard',
+        position,
+        data: likedItems.find((item) => item.id === nodeId) || {},
+      },
+    ]);
+  }}
+>
+   {/* カードリストのスタイル */}
+  {likedItems.map((item) => (
+    <UrlCard
+      key={item.id}
+      {...item}
+      onLike={() => {}}
+      onShare={handleShare}
+      draggable={true}
+      onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)} // ドラッグ開始時にIDを設定
+      className="w-53 h-30"
+    />
+  ))}
+</aside>
     </main>
   )
 }
