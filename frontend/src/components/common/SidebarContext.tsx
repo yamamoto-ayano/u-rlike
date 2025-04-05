@@ -4,10 +4,10 @@
 import { createContext, useContext, useState } from "react";
 
 export interface SubItem {
-  id: number;
-  name: string;
-  path: string;
-  count: number;
+    folderid: number;
+    name: string;
+    path: string;
+    count: number;
 }
 
 interface SidebarContextType {
@@ -24,8 +24,8 @@ export const useSidebar = () => useContext(SidebarContext);
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
   const [subItems, setSubItems] = useState<SubItem[]>([
-    { id: 1, name: "HP仕事", path: "/folder/hp-work", count: 4 },
-    { id: 2, name: "LiT!", path: "/folder/lit", count: 3 },
+    { folderid: 1, name: "HP仕事", path: "/folder/1", count: 4 },
+    { folderid: 2, name: "LiT!", path: "/folder/2", count: 3 },
   ]);
 
   return (

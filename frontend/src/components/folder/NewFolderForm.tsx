@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSidebar, SubItem } from "@/components/common/SidebarContext";
+import { useModal } from "@/components/folder/FolderFormContext"; 
 
 interface NewFolderFormProps {
   onClose: () => void;
@@ -13,12 +14,13 @@ interface NewFolderFormProps {
 export function NewFolderForm({ onClose }: NewFolderFormProps) {
   const { subItems, setSubItems } = useSidebar();
   const [name, setName] = useState("");
+  const { isOpen, closeModal, openModal } = useModal();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newId =subItems.length > 0 ? Math.max(...subItems.map((item) => item.id)) + 1 : 1; // IDの生成
+    const newId =subItems.length > 0 ? Math.max(...subItems.map((item) => item.folderid)) + 1 : 1; // IDの生成
     const newFolder: SubItem = {
-      id: newId,
+      folderid: newId,
       name,
       path: `/folder/${newId}`, // 👈 パスは自動生成
       count: 0,
@@ -40,7 +42,7 @@ export function NewFolderForm({ onClose }: NewFolderFormProps) {
       </div>
       {/* 👇 パス入力欄は削除しました */}
       <div className="flex justify-end gap-2">
-        <Button variant="outline" type="button" onClick={onClose}>
+        <Button variant="outline" type="button" onClick={closeModal}>
           キャンセル
         </Button>
         <Button type="submit">作成</Button>
