@@ -5,14 +5,17 @@ import { usePathname } from "next/navigation"
 import { Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useSidebar } from "@/components/common/SidebarContext"
+import { useModal } from "@/components/folder/FolderFormContext"
 
 interface SidebarProps {
   className?: string
 }
 
 export function Sidebar({ className }: SidebarProps) {
+  const { isOpen, closeModal, openModal } = useModal()
   const pathname = usePathname()
-
+  const { subItems } = useSidebar()
   const navItems = [
     { name: "HOME", path: "/" },
     { name: "like", path: "/like" },
@@ -22,10 +25,7 @@ export function Sidebar({ className }: SidebarProps) {
       name: "フォルダ",
       path: "/folder",
       isFolder: true,
-      subItems: [
-        { name: "HP仕事", path: "/folder/hp-work" },
-        { name: "LiT!", path: "/folder/lit" },
-      ],
+      subItems,
     },
   ]
 
@@ -64,7 +64,14 @@ export function Sidebar({ className }: SidebarProps) {
         ))}
       </nav>
 
-      <Button variant="ghost" className="mt-auto w-full justify-center p-2 rounded-full">
+      <Button 
+        variant="ghost" 
+        className="mt-auto w-full justify-center p-2 rounded-full"
+        onClick={() => {
+          openModal();
+        }
+        }
+      >
         <Plus className="h-8 w-8" />
       </Button>
     </div>
