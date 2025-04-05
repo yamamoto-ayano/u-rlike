@@ -120,5 +120,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'NicoMoji', sans-serif;
   }
+}
+
+@font-face {
+  font-family: 'NicoMoji';
+  src: url('/font/font.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
 }
