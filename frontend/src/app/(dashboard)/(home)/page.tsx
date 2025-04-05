@@ -87,7 +87,7 @@ export default function Home() {
                 {isCard0Visible && (
                   <div
                     className="absolute inset-0 transition-transform duration-300"
-                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 0 ? 10 : 0 }}
+                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 0 ? 100 : 90 }}
                   >
                     <SwipeCard
                       id={card0Card.id}
@@ -104,7 +104,7 @@ export default function Home() {
                 {isCard1Visible && (
                   <div
                     className="absolute inset-0 transition-transform duration-300 z-0"
-                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 1 ? 10 : 0 }}
+                    style={{ transform: "translateX(0)", zIndex: currentCardNo === 1 ? 100 : 90 }}
                   >
                     <SwipeCard
                       id={card1Card.id}
