@@ -172,7 +172,7 @@ export function SwipeCard({ id, title, url, description, imageUrl, onSwipe, setB
     <div
       ref={cardRef}
       className={cn(
-        "swipe-card rounded-lg overflow-hidden shadow-lg bg-white transition-all duration-300 w-full select-none touch-none",
+        "swipe-card rounded-lg overflow-hidden shadow-lg bg-white transition-all duration-300 w-full select-none touch-none ",
         swipeDirection && `swipe-effect-${swipeDirection}`
       )}
       onPointerDown={handlePointerDown}
