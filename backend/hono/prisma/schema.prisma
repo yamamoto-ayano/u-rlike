@@ -41,6 +41,8 @@ model Bookmark {
   folderId    String
   BookmarkSource  Edges[] @relation("BookmarkSource")
   BookmarkTarget  Edges[] @relation("BookmarkTarget")
+  positionx     Int?
+  positiony     Int?
 }
 
 model Edges {
@@ -63,6 +65,7 @@ model Like {
   title       String
   description String
   image       String?
+  memo        String?
   createdAt   DateTime @default(now())
 }
 
@@ -72,5 +75,6 @@ model Superlike {
   title       String
   description String
   image       String?
+  memo        String?
   createdAt   DateTime @default(now())
 }
