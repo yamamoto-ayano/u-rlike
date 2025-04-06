@@ -27,6 +27,7 @@ export function FolderDropArea({ id, name, onDrop }: FolderDropAreaProps) {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsActive(false)
+    console.log("!!!!!!!!!!")
 
     const itemId = e.dataTransfer.getData("text/plain")
     if (itemId) {

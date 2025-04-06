@@ -219,10 +219,10 @@
         
         ```jsx
         {
-            "source": "string",//nodeId自分
-            "target": "string",//nodeId相手
-            "type": "string", //(custom-edge)
-            "memo": "string"
+            "source": string,//nodeId自分
+            "target": string,//nodeId相手
+            "type": string, //(custom-edge)
+            "memo": string
         }
         ```
         
@@ -233,7 +233,7 @@
         {
             "status": 200,
             "message": "add edge successful",
-            "id": "string"
+            "id": string
         
         ```
         
@@ -248,11 +248,11 @@
             "message": "get edges successful",
             "data": [
                 {
-                    "id": "string",//(ノードのid)
-                    "source": "string",//(伸ばす前の目の紐付けのノード)
-                    "target": "string",//(伸ばした後の紐付けのノード)
-                    "type": "string",
-                    "memo": "string"
+                    "id": string,//(ノードのid)
+                    "source": string,//(伸ばす前の目の紐付けのノード)
+                    "target": string,//(伸ばした後の紐付けのノード)
+                    "type": string,
+                    "memo": string
                 },
                 ...
             ]
@@ -265,7 +265,7 @@
         
         ```jsx
         {
-            "memo": "string"
+            "memo": string
         }
         ```
         
@@ -275,7 +275,7 @@
         {
             "status": 200,
             "message": "update edge successful",
-            "id": "string"
+            "id": string
         }
         ```
         
@@ -300,11 +300,12 @@
             "message": "get likes successful",
             "data": [
                 {
-                    "id": "string",
-                    "url": "string",
-                    "title": "string",
-                    "description": "string",
-                    "image": "string"
+                    "id": string,
+                    "url": string,
+                    "title": string,
+                    "description": string,
+                    "image": string,
+                    "memo": string
                 },
                 ...
             ]
@@ -317,10 +318,11 @@
         
         ```jsx
         {
-            "url": "string",
-            "title": "string",
-            "description": "string",
-            "image": "string"
+            "url": string,
+            "title": string,
+            "description": string,
+            "image": string,
+            "memo": string
         }
         ```
         
@@ -345,16 +347,16 @@
         }
         ```
 - PUT /likes/<like_id>
-    - いいねのメモを編集するエンドポイント
+    - いいねのメモを編集したり、ブックマークに追加したりするエンドポイント
     - リクエスト
         - application/json
         
         ```jsx
         {
-            "memo": "string"
+            "memo"?: string,
+            "folderId"?: string
         }
         ```
-        
     - レスポンス
         - application/json
         
@@ -374,11 +376,12 @@
             "status": 200,
             "message": "get like successful",
             "data": {
-                "id": "string",
-                "url": "string",
-                "title": "string",
-                "description": "string",
-                "image": "string"
+                "id": string,
+                "url": string,
+                "title": string,
+                "description": string,
+                "image": string,
+                "memo": string
             }
         }
         ```
@@ -393,11 +396,12 @@
             "message": "get superlikes successful",
             "data": [
                 {
-                    "id": "string",
-                    "url": "string",
-                    "title": "string",
-                    "description": "string",
-                    "image": "string"
+                    "id": string,
+                    "url": string,
+                    "title": string,
+                    "description": string,
+                    "image": string,
+                    "memo": string
                 },
                 ...
             ]
@@ -410,10 +414,11 @@
         
         ```jsx
         {
-            "url": "string",
-            "title": "string",
-            "description": "string",
-            "image": "string"
+            "url": string,
+            "title": string,
+            "description": string,
+            "image": string,
+            "memo": string
         }
         ```
         
@@ -438,16 +443,16 @@
         }
         ```
 - PUT /superlikes/<superlike_id>
-    - スーパいいねのメモを編集するエンドポイント
+    - スーパいいねのメモを編集したり、ブックマークに追加したりするエンドポイント
     - リクエスト
         - application/json
         
         ```jsx
         {
-            "memo": "string"
+            "memo"?: string,
+            "folderId"?: string
         }
         ```
-        
     - レスポンス
         - application/json
         
@@ -457,6 +462,26 @@
             "message": "update superlike successful"
         }
         ```
+GET /superlikes/<superlike_id>
+    - スーパいいねの詳細を取得するエンドポイント
+    - レスポンス
+        - application/json
+        
+        ```jsx
+        {
+            "status": 200,
+            "message": "get superlike successful",
+            "data": {
+                "id": string,
+                "url": string,
+                "title": string,
+                "description": string,
+                "image": string,
+                "memo": string
+            }
+        }
+        ```
+
 */
 
 import { Hono } from 'hono'
@@ -713,11 +738,17 @@ app.delete('/bookmarks/:folderId/:bookmarkId', async (c) => {
 app.put('/bookmarks/:folderId/:bookmarkId', async (c) => {
   try {
     const bookmarkId = c.req.param('bookmarkId')
-    const { image, memo, folderId } = await c.req.json()
+    const originFolderId = c.req.param('folderId')
+    const { image, memo, folderId, positionx, positiony } = await c.req.json()
 
-    const updateData: any = { folderId }
+    const updateData: any = {}
     if (image) updateData.image = image
     if (memo) updateData.memo = memo
+    if (folderId) {
+      updateData.folder = { connect: { id: folderId } }
+    }
+    if (positionx) updateData.positionx = positionx
+    if (positiony) updateData.positiony = positiony
 
     const updatedBookmark = await prisma.bookmark.update({
       where: { id: bookmarkId },
@@ -730,6 +761,7 @@ app.put('/bookmarks/:folderId/:bookmarkId', async (c) => {
       data: updatedBookmark
     })
   } catch (error) {
+    console.error('Error updating bookmark:', error)
     return c.json({ status: 500, message: "Failed to update bookmark" }, 500)
   }
 })
@@ -737,15 +769,16 @@ app.put('/bookmarks/:folderId/:bookmarkId', async (c) => {
 app.post('/bookmarks/:folderId/edges', async (c) => {
   try {
     const folderId = c.req.param('folderId')
-    const { source, target, type, memo } = await c.req.json()
+    const { id, source, target, type, memo } = await c.req.json()
 
     const edge = await prisma.edges.create({
       data: {
-        source,
-        target,
+        id,
+        source: { connect: { id: source } },
+        target: { connect: { id: target } },
         type,
-        memo,
-        folderId
+        memo: memo || "",
+        folder: { connect: { id: folderId } }
       }
     })
 
@@ -756,6 +789,7 @@ app.post('/bookmarks/:folderId/edges', async (c) => {
     })
   }
   catch (error) {
+    console.error('Error adding edge:', error)
     return c.json({ status: 500, message: "Failed to add edge" }, 500)
   }
 })
@@ -876,18 +910,54 @@ app.delete('/likes/:likeId', async (c) => {
 app.put('/likes/:likeId', async (c) => {
   try {
     const likeId = c.req.param('likeId')
-    const { memo } = await c.req.json()
+    const { memo, folderId } = await c.req.json()
+    console.log(memo, folderId)
+    console.log(likeId)
 
-    await prisma.like.update({
-      where: { id: likeId },
-      data: { memo }
-    })
+    if (memo || memo === "") {
+      await prisma.like.update({
+        where: { id: likeId },
+        data: { memo }
+      })
+    } 
+    if (folderId) {
+      const like = await prisma.like.findUnique({
+        where: { id: likeId }
+      })
+      if (!like) {
+        console.log("ret")
+        return c.json({ status: 404, message: "Like not found" }, 404)
+      }
+      // console.log(like)
+      console.log("a")
 
+      const folder = await prisma.bookmarkFolder.findUnique({
+        where: { id: folderId }
+      })
+      console.log(folder)
+      const bookmark = await prisma.bookmark.create({
+        data: {
+          url: like.url,
+          title: like.title,
+          description: like.description,
+          image: like.image,
+          memo: like.memo || "",
+          // folderId,
+          folder: {connect: { id: folderId }}
+        },
+      })
+      // console.log(ret)
+      console.log("b")
+      await prisma.like.delete({
+        where: { id: likeId }
+      })
+    }
     return c.json({
       status: 200,
       message: "update like successful"
     })
   } catch (error) {
+    console.error('Error updating like:', error)
     return c.json({ status: 500, message: "Failed to update like" }, 500)
   }
 })
@@ -968,13 +1038,31 @@ app.delete('/superlikes/:superlikeId', async (c) => {
 app.put('/superlikes/:superlikeId', async (c) => {
   try {
     const superlikeId = c.req.param('superlikeId')
-    const { memo } = await c.req.json()
+    const { memo, folderId } = await c.req.json()
 
-    await prisma.superlike.update({
-      where: { id: superlikeId },
-      data: { memo }
-    })
-
+    if (memo || memo === "") {
+      await prisma.superlike.update({
+        where: { id: superlikeId },
+        data: { memo }
+      })
+    } else if (folderId) {
+      const superlike = await prisma.superlike.findUnique({
+        where: { id: superlikeId }
+      })
+      if (!superlike) {
+        return c.json({ status: 404, message: "Superlike not found" }, 404)
+      }
+      await prisma.bookmark.create({
+        data: {
+          url: superlike.url,
+          title: superlike.title,
+          description: superlike.description,
+          image: superlike.image,
+          memo : superlike.memo || "",
+          folder: { connect: { id: folderId } }
+        }
+      })
+    }
     return c.json({
       status: 200,
       message: "update superlike successful"
@@ -983,6 +1071,7 @@ app.put('/superlikes/:superlikeId', async (c) => {
     return c.json({ status: 500, message: "Failed to update superlike" }, 500)
   }
 })
+
 // スーパいいねの詳細を取得
 app.get('/superlikes/:superlikeId', async (c) => {
   try {

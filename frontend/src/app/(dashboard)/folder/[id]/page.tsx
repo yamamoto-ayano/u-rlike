@@ -187,33 +187,90 @@ const sampleLikedItems = [
   },
 ]
 
+
+
 // フォルダのURLを取得して、URLカードを表示するページ
 export default function FolderDetailPage() {
   const { id } = useParams()
-  const [likedItems, setLikedItems] = useState(sampleLikedItems)
+  const [likedItems, setLikedItems] = useState([])
+  const [edgeData, setEdgeData] = useEdgesState([])
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
+  const [isLoading, setLoading] = useState(true)
 
-  // 初期データを取得
   useEffect(() => {
-    fetch(`/api/folders/${id}/graph`)
-      .then((res) => res.json())
-      .then((data) => {
-        const fetchedNodes = data.nodes.map((node: any) => ({
-          ...node,
-          data: {
-            ...node.data,
-            draggable: true,
-          },
-        }))
-        const fetchedEdges = data.edges.map((edge: any) => ({
-          ...edge,
-          type: 'custom-edge',
-        }))
-        setNodes(fetchedNodes)
-        setEdges(fetchedEdges)
-      })
-      .catch((err) => console.error('Error fetching graph data:', err))
-  }, [id])
+    const fetchLikedItems = async () => {
+      try {
+        const response = await fetch(`http://localhost:8787/bookmarks/${id}`)
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        const data = await response.json()
+        setLikedItems(data.data)
+        setNodes(data.data.filter((item: any) => {
+          return item.positionx
+        }).map(((item: any) => {
+          return {
+            id: item.id,
+            type: 'urlCard',
+            position: {
+              x: item.positionx,
+              y: item.positiony,
+            },
+            data: {
+              ...item,
+              onShare: handleShare,
+              onDragStart: (e: React.DragEvent) => handleDragStart(e, item.id),
+              draggable: true,
+            },
+          }
+        }
+        )));
+        console.log(data.data.filter((item: any) => {
+          return item.positionx
+        }).map(((item: any) => {
+          item.position = {
+            x: item.positionx,
+            y: item.positiony,
+          }
+          return item
+        }
+        )))
+
+
+        console.log('Fetched liked items:', data.data)
+
+        // フォルダのエッジデータを取得
+        const edgeResponse = await fetch(`http://localhost:8787/bookmarks/${id}/edges`)
+        if (!edgeResponse.ok) {
+          throw new Error('Network response was not ok')
+        }
+        const edgeData = await edgeResponse.json()
+        setEdgeData(edgeData.data)
+        setEdges(edgeData.data.map((edge: any) => ({
+          id: edge.id,
+          source: edge.sourceId,
+          target: edge.targetId,
+          type: edge.type || 'custom-edge',
+          memo: edge.memo,
+        })))
+        console.log('Fetched edge data:', edgeData.data.map((edge: any) => ({
+          id: edge.id,
+          source: edge.sourceId,
+          target: edge.targetId,
+          type: edge.type || 'custom-edge',
+          memo: edge.memo,
+        })))
+        
+      } catch (error) {
+        console.error('Error fetching liked items:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLikedItems()
+  }, [])
+
 
   // シェアボタンの処理
   const handleShare = (id: string, platform: 'line' | 'discord') => {
@@ -245,17 +302,7 @@ export default function FolderDetailPage() {
 
   // ノードの初期位置を設定
   const initialEdges: Edge[] = useMemo(() => {
-    const edges: Edge[] = []
-    for (let i = 0; i < likedItems.length - 1; i++) {
-      edges.push({
-        id: `${likedItems[i].id}->${likedItems[i + 1].id}`,
-        type: 'custom-edge',
-        source: likedItems[i].id,
-        target: likedItems[i + 1].id,
-        data: {},
-      })
-    }
-    return edges
+    return edgeData
   }, [likedItems])
 
   // ノードとエッジの状態管理
@@ -265,13 +312,29 @@ export default function FolderDetailPage() {
   // ノードの追加処理
   const handleConnect = useCallback(
     (connection: Connection) => {
-      const edge: Edge = {
+      const edge: CustomEdgeData = {
         id: `${connection.source}-${connection.target}`, // ユニークなIDを追加
         ...connection,
         type: 'custom-edge',
-        data: {}, // 初期データ忘れずに
+        memo: '',
       };
       setEdges((eds) => addEdge(edge, eds))
+
+      // APIへ送信
+      fetch(`/api/folders/${id}/edges`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          source: connection.source,
+          target: connection.target,
+          id: edge.id,
+          type: edge.type,
+          memo: edge.memo,
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) => console.log('Edge created:', res))
+        .catch((err) => console.error('Error creating edge:', err))
     },
     [setEdges]
   )
@@ -314,18 +377,26 @@ const nodeTypes = useMemo(
         }))
 
       // APIへ送信
-      if (updatedNodes.length > 0) {
-        fetch(`/api/folders/${id}/nodes/positions`, {
-          method: 'POST',
+      for (const node of updatedNodes) {
+        fetch(`http://localhost:8787/bookmarks/${id}/${node.id}`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedNodes),
+          body: JSON.stringify({ positionx: node.position.x, positiony: node.position.y }),
         })
           .then((res) => res.json())
-          .then((res) => console.log('Node positions updated:', res))
-          .catch((err) => console.error('Error updating node positions:', err))
+          .then((res) => console.log('Node position updated:', res))
+          .catch((err) => console.error('Error updating node position:', err))
       }
     },
     [id, onNodesChange]
+  )
+
+  const handleEdgesChange = useCallback(
+    (changes: any) => {
+
+
+    },
+    [id, onEdgesChange]
   )
 
 // エッジ作成時にAPIへ送信
@@ -343,45 +414,25 @@ const onConnect = useCallback(
 
     try {
       // サーバーに新しいエッジを送信
-      const response = await fetch(`/api/folders/${id}/edges`, {
+      const response = await fetch(`http://localhost:8787/bookmarks/${id}/edges`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEdge),
+        body: JSON.stringify({
+          source: connection.source,
+          target: connection.target,
+          id: newEdge.id,
+          type: newEdge.type,
+        }),
       });
-      // レスポンスをチェック
       if (!response.ok) {
         throw new Error(`Failed to create edge: ${response.statusText}`);
       }
-      // レスポンスデータを取得
       const result = await response.json();
       console.log('Edge created:', result);
     } catch (err) {
       console.error('Error creating edge:', err);
-    }
-  },
-  [id, setEdges]
-);
-
-// エッジ削除時にAPIへ送信
-const handleEdgeDelete = useCallback(
-  async (edgeId: string) => {
-    // フロントエンドでエッジを削除
-    setEdges((eds) => eds.filter((e) => e.id !== edgeId));
-
-    try {
-      // サーバーに削除リクエストを送信
-      const response = await fetch(`/api/folders/${id}/edges/${edgeId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete edge: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log('Edge deleted:', result);
-    } catch (err) {
-      console.error('Error deleting edge:', err);
+      // エッジを削除する場合は、setEdgesを使ってフロントエンドの状態を戻す
+      setEdges((eds) => eds.filter((e) => e.id !== newEdge.id));
     }
   },
   [id, setEdges]
@@ -395,14 +446,27 @@ const handleEdgeDelete = useCallback(
           {...edgeProps}
           data={{
             ...edgeProps.data,
-            onDelete: (id: string) =>
-              setEdges((eds) => eds.filter((e) => e.id !== id)),
+            onDelete: (id_: string) =>
+            {
+              // APIへ削除リクエスト
+              fetch(`http://localhost:8787/bookmarks/${id}/edges/${edgeProps.id}`, {
+                method: 'DELETE',
+              })
+                .then((res) => res.json())
+                .then((res) => console.log('Edge deleted:', res))
+                .catch((err) => console.error('Error deleting edge:', err))
+              setEdges((eds) => eds.filter((e) => e.id !== id_));
+            }
           }}
         />
       ),
     }),
     [setEdges]
   )
+
+  if (isLoading) {
+    return <div className="text-center">Loading...</div>
+  }
 
   // ノードのドラッグ処理
   return (
@@ -436,7 +500,7 @@ const handleEdgeDelete = useCallback(
     nodes={nodes}
     edges={edges}
     onNodesChange={handleNodesChange}
-    onEdgesChange={onEdgesChange}
+    onEdgesChange={handleEdgesChange}
     onConnect={onConnect}
     nodeTypes={nodeTypes}
     edgeTypes={edgeTypes}
@@ -473,7 +537,7 @@ const handleEdgeDelete = useCallback(
 >
    {/* カードリストのスタイル */}
   {likedItems.map((item) => (
-    <div className="h-22 transform scale-65 flex justify-center">
+    <div className="h-22 transform scale-65 flex justify-center" key={item.id}>
     <UrlCard
       key={item.id}
       {...item}
