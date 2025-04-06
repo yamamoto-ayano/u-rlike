@@ -163,25 +163,25 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
 const sampleLikedItems = [
   {
     id: '1',
-    title: 'URLタイトル1',
-    url: 'https://example.com/1',
-    description: 'メモメモメモメモメモメモメモメモ',
+    title: 'Hono-Webframework',
+    url: 'https://hono.dev/',
+    description: 'Honoの公式ドキュメント',
     imageUrl: '/placeholder.svg?height=96&width=96',
     liked: true,
   },
   {
     id: '2',
-    title: 'URLタイトル2',
-    url: 'https://example.com/2',
-    description: 'メモメモメモメモメモメモメモメモ',
+    title: 'Honoを使い倒したい2024',
+    url: 'https://zenn.dev/aishift/articles/a3dc8dcaac6bfa',
+    description: 'Hono 使い方ガイド',
     imageUrl: '/placeholder.svg?height=96&width=96',
     liked: true,
   },
   {
     id: '3',
-    title: 'URLタイトル3',
-    url: 'https://example.com/3',
-    description: 'メモメモメモメモメモメモメモメモ',
+    title: 'はじめに - Hono',
+    url: 'https://hono.dokyumento.jp/docs/getting-started/basic',
+    description: '日本語版のHonoドキュメント',
     imageUrl: '/placeholder.svg?height=96&width=96',
     liked: true,
   },
@@ -531,7 +531,7 @@ const handleEdgeDelete = useCallback(
       onLike={() => {}}
       draggable={true}
       onDragStart={(e) => e.dataTransfer.setData('text/plain', item.id)} // ドラッグ開始時にIDを設定
-      className="w-60 h-30"
+      className="w-60 h-32"
     />
     </div>
   ))}

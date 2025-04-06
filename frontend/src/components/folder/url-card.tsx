@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState } from "react"
-import Image from "next/image"
 import { Share, Heart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,7 +16,6 @@ interface UrlCardProps {
   title: string
   url: string
   description: string
-  image: string
   liked?: boolean
   onLike?: (id: string) => void
   draggable?: boolean
@@ -30,7 +28,6 @@ export function UrlCard({
   title,
   url,
   description,
-  image,
   liked = false,
   onLike,
   draggable = false,
@@ -80,7 +77,6 @@ export function UrlCard({
     const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(message)}`
     window.open(lineUrl, "_blank")
   }
-  
 
   return (
     <div
@@ -90,15 +86,6 @@ export function UrlCard({
       draggable={draggable}
       onDragStart={handleDragStart}
     >
-      <div className="relative w-24 h-24 flex-shrink-0">
-        <Image
-          src={image || "/placeholder.svg?height=96&width=96"}
-          alt={title}
-          fill
-          className="object-cover rounded-md"
-        />
-      </div>
-
       <div className="flex-1 overflow-hidden">
         <h3 className="text-xl font-bold mb-1 truncate">{title}</h3>
         <p className="text-sm text-gray-600 mb-2 line-clamp-2">{description}</p>
@@ -114,7 +101,7 @@ export function UrlCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={handleWebShare}>共有する</DropdownMenuItem>
-            <DropdownMenuItem onClick={handleShareLine }>LINEに送る</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleShareLine}>LINEに送る</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
