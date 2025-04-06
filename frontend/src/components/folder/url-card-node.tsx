@@ -2,7 +2,9 @@
 import { Handle, Position } from '@xyflow/react'
 import { UrlCard } from './url-card'
 
-export function UrlCardNode({ data }: { data: any }) {
+export function UrlCardNode({ data, memoFetchAPI }: { data: any, memoFetchAPI: string }) {
+  console.log("UrlCardNode data:", data)
+  data.memoFetchAPI = memoFetchAPI
   return (
     <div className="relative">
       {/* 上からの接続を受け付ける */}

@@ -15,6 +15,7 @@ type SuperLikeAPI = {
     url: string
     description: string
     image: string
+    memo: string
   }[]
 }
 
@@ -118,6 +119,8 @@ export default function LikePage() {
                   onLike={handleLike}
                   draggable={true}
                   onDragStart={handleDragStart}
+                  memo={item.memo}
+                  memoFetchURL={ `http://localhost:8787/superlike/${item.id}` }
                 />
               ))}
             </div>

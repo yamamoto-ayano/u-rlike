@@ -876,14 +876,15 @@ app.get('/likes', async (c) => {
 // いいねを追加
 app.post('/likes', async (c) => {
   try {
-    const { url, title, description, image } = await c.req.json()
+    const { url, title, description, image, memo } = await c.req.json()
 
     await prisma.like.create({
       data: {
         url,
         title,
         description,
-        image
+        image,
+        memo: memo || ""
       }
     })
 
@@ -1004,14 +1005,15 @@ app.get('/superlikes', async (c) => {
 // スーパいいねを追加
 app.post('/superlikes', async (c) => {
   try {
-    const { url, title, description, image } = await c.req.json()
+    const { url, title, description, image, memo } = await c.req.json()
 
     await prisma.superlike.create({
       data: {
         url,
         title,
         description,
-        image
+        image,
+        memo: memo || ""
       }
     })
 
