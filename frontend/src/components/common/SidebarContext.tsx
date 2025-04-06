@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 export interface SubItem {
   folderid: number;
@@ -36,6 +36,27 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
+  useEffect(() => {
+    const fetchSubItems = async () => {
+      try {
+        const response = await fetch("http://localhost:8787/bookmarks");
+        const json = await response.json();
+        // API の戻り値は data 配下にフォルダ情報がある想定です
+        const folders = json.data.map((folder: { id: string; name: string; count: number }) => ({
+          folderid: folder.id,
+          name: folder.name,
+          path: `/folder/${folder.id}`,
+          count: folder.count,
+        }));
+        setSubItems(folders);
+      } catch (error) {
+        console.error("Failed to fetch subItems:", error);
+      }
+    };
+
+    fetchSubItems();
+  }, []);
+
 
   return (
     <SidebarContext.Provider
