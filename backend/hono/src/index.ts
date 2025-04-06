@@ -486,6 +486,14 @@ GET /superlikes/<superlike_id>
 
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { jwt } from 'hono/jwt'
+import { z } from 'zod'
+import * as bcrypt from 'bcrypt'
+import * as JWT from 'jsonwebtoken'
+
+// 環境変数
+const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret'
+const JWT_EXPIRES_IN = '1h'
 
 const isCloudflare = typeof globalThis?.WebSocket !== 'function'
 
@@ -500,6 +508,203 @@ app.use('*', cors())
 
 app.get('/', (c) => {
   return c.text('Hello Hono!')
+})
+
+// ユーザー登録スキーマ
+const registerSchema = z.object({
+  username: z.string().min(3).max(50),
+  email: z.string().email(),
+  password: z.string().min(8)
+})
+
+// ログインスキーマ
+const loginSchema = z.object({
+  username: z.string().min(3),
+  password: z.string().min(8)
+})
+
+// JWTミドルウェア
+const jwtMiddleware = jwt({
+  secret: JWT_SECRET
+})
+
+app.use('/api/protected/*', jwtMiddleware)
+
+app.post('/auth/register', async (c) => {
+  try {
+    const body = await c.req.json
+
+    const result = registerSchema.safeParse(body)
+    if (!result.success) {
+      return c.json({ error: 'Invalid input', details: result.error.format() }, 400)
+    }
+
+    const { username, email, password } = result.data
+
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email }
+        ]
+      }
+    })
+
+    if (existingUser) {
+      return c.json({ error: 'User already exists' }, 409)
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = await prisma.user.create({
+      data: {
+        username,
+        email,
+        password: hashedPassword,
+        authType: 'local'
+      }
+    })
+
+    const { password: _, ...userWithoutPassword } = user
+
+    return c.json({
+      message: 'User registered successfully',
+      user: userWithoutPassword
+    }, 201)
+  } catch (error) {
+    console.error('Error registering user:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+app.post('/auth/login', async (c) => {
+  try {
+    const body = await c.req.json()
+
+    const result = loginSchema.safeParse(body)
+    if (!result.success) {
+      return c.json({ error: 'Invalid input', details: result.error.format() }, 400)
+    }
+
+    const { username, password } = result.data
+
+    const user = await prisma.user.findUnique({
+      where: { username }
+    })
+
+    if (!user) {
+      return c.json({ error: 'User not found' }, 404)
+    }
+
+    if (user.authType !== 'local') {
+      return c.json({ error: 'This account uses a different authentication method' }, 400)
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+
+    if (!isPasswordValid) {
+      return c.json({ error: 'Invalid password' }, 401)
+    }
+
+    // JWTトークン生成
+    // ★拡張性のポイント: OAuthと互換性のあるペイロード構造
+    const token = JWT.sign(
+      { 
+        sub: user.id,
+        username: user.username,
+        email: user.email,
+        // scopeフィールドを追加し、将来OAuthで使用できるようにする
+        scope: 'user:read user:write'
+      },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    )
+
+    await prisma.token.create({
+      data: {
+        accessToken: token,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 3600 * 1000) // 1時間後に期限切れ
+      }
+    })
+
+    return c.json({
+      message: 'Login successful',
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: 3600
+    })
+  } catch (error) {
+    console.error('Error logging in:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+// token検証エンドポイント
+app.post('/auth/verify', async (c) => {
+  try {
+    const body = await c.req.json()
+    const { token } = body
+
+    if (!token) {
+      return c.json({ error: 'Token is required' }, 400)
+    }
+
+    try {
+      const decoded = JWT.verify(token, JWT_SECRET)
+
+      const tokenRecord = await prisma.token.findFirst({
+        where: {
+          accessToken: token,
+          expiresAt: {
+            gt: new Date()
+          }
+        }
+      })
+
+      if (!tokenRecord) {
+        return c.json({ error: 'Token is invalid or expired' }, 401)
+      }
+
+      return c.json({
+        valid: true,
+        payload: decoded
+      })
+    } catch (err) {
+      return c.json({ error: 'Token is invalid' }, 401)
+    }
+  } catch (error) {
+    console.error('Error verifying token:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
+})
+
+// logoutエンドポイント
+app.post('/auth/logout', async (c) => {
+  try {
+    const payload = c.get('jwtPayload')
+    const token = c.req.header('Authorization')?.replace('Bearer', '')
+
+    if (!token) {
+      return c.json({ error: 'Token is required' }, 400)
+    }
+
+    // トークンを無効化する
+    await prisma.token.updateMany({
+      where: {
+        accessToken: token,
+        userId: payload.sub
+      },
+      data: {
+        expiresAt: new Date() // 即時無効化
+      }
+    })
+
+    return c.json({ message: 'Logout successful' })
+  } catch (error) {
+    console.error('Error logging out:', error)
+    return c.json({ error: 'Internal server error' }, 500)
+  }
 })
 
 // 履歴関連のAPIの実装
