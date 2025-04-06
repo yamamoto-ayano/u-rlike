@@ -192,7 +192,7 @@ export default function RecommendationPage() {
               )}
 
               <div className="mt-2">
-                <MemoInput onSave={handleSaveMemo} />
+                <MemoInput memo={memo} setMemo={setMemo} />
               </div>
             </div>
           </div>

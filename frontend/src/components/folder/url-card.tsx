@@ -23,6 +23,8 @@ interface UrlCardProps {
   draggable?: boolean
   onDragStart?: (e: React.DragEvent, id: string) => void
   className?: string
+  memo: string
+  memoFetchURL: string
 }
 
 export function UrlCard({
@@ -36,8 +38,11 @@ export function UrlCard({
   draggable = false,
   onDragStart,
   className,
+  memo,
+  memoFetchURL
 }: UrlCardProps) {
   const [isLiked, setIsLiked] = useState(liked)
+  const [memo_, setMemo] = useState(memo)
 
   const handleLike = () => {
     setIsLiked(!isLiked)
@@ -103,6 +108,21 @@ export function UrlCard({
         <h3 className="text-xl font-bold mb-1 truncate">{title}</h3>
         <p className="text-sm text-gray-600 mb-2 line-clamp-2">{description}</p>
         <p className="text-xs text-gray-500 truncate">{url}</p>
+      <textarea
+        className="w-full p-2 border rounded-md text-sm text-gray-700 m-2"
+        placeholder="メモを入力してください..."
+        defaultValue={memo_}
+        onBlur={(e) => {
+          setMemo(e.target.value)
+          fetch(memoFetchURL, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ memo: e.target.value }),
+          })
+        }}
+      />
       </div>
 
       <div className="flex flex-col gap-2 items-end">

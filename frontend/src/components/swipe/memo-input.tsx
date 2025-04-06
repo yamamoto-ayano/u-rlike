@@ -6,17 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 
 interface MemoInputProps {
   initialValue?: string
-  onSave?: (memo: string) => void
+  memo: string
+  setMemo: (memo: string) => void
 }
 
-export function MemoInput({ initialValue = "", onSave }: MemoInputProps) {
-  const [memo, setMemo] = useState(initialValue)
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave(memo)
-    }
-  }
+export function MemoInput({ initialValue = "", memo, setMemo }: MemoInputProps) {
 
   return (
     <div className="w-full p-4 bg-gray-100 rounded-lg">

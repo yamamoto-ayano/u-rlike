@@ -344,7 +344,7 @@ const nodeTypes = useMemo(
             className="w-4 h-4"
           />
         </button>
-        <UrlCardNode {...nodeProps} />
+        <UrlCardNode {...nodeProps} memoFetchAPI={`http://localhost:8787/bookmarks/${id}/${nodeProps.id}`} />
       </div>
     ),
   }),

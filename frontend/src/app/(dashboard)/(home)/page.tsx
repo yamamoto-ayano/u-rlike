@@ -125,6 +125,7 @@ export default function Home() {
           url: historyItems[currentCardNo].url,
           description: historyItems[currentCardNo].description,
           image: historyItems[currentCardNo].image,
+          memo: memo,
         }),
       })
         .then((response) => {
@@ -140,6 +141,8 @@ export default function Home() {
           console.error("Error swiping item:", error)
       })
     }
+
+    setMemo("") // メモをクリア
   }
 
   
@@ -147,7 +150,9 @@ export default function Home() {
 
   // メモ保存処理
   const handleSaveMemo = (text: string) => {
+    console.log(`Saving memo: ${text}`)
     setMemo(text)
+
     // 実際のアプリではここでメモを保存する処理を行う
   }
 
@@ -242,7 +247,7 @@ export default function Home() {
 
               {/* メモ入力 */}
               <div className="mt-2">
-                <MemoInput onSave={handleSaveMemo} />
+                <MemoInput memo={memo} setMemo={setMemo} />
               </div>
             </div>
           </div>
