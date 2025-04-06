@@ -120,6 +120,27 @@ export default function LikePage() {
     console.log(`Moving item ${itemId} to folder ${folderId}`)
     // 実際のアプリではここでアイテムをフォルダに移動する処理を行う
 
+    // フォルダにアイテムを移動するAPIリクエストを送信
+    fetch(`http://localhost:8787/likes/${itemId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ folderId }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok")
+        }
+        return response.json()
+      })
+      .then((data) => {
+        console.log("Item moved successfully:", data)
+      })
+      .catch((error) => {
+        console.error("Error moving item:", error)
+      })
+
     // UIからアイテムを削除（実際のアプリでは必要に応じて調整）
     setLikedItems((prev) => prev.filter((item) => item.id !== itemId))
   }
