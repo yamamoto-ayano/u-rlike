@@ -326,7 +326,17 @@ const nodeTypes = useMemo(
         <button
           className="absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ zIndex: 10 }}
-          onClick={() => setNodes((nds) => nds.filter((n) => n.id !== nodeProps.id))}
+          onClick={() => {
+            setNodes((nds) => nds.filter((n) => n.id !== nodeProps.id))
+            fetch(`http://localhost:8787/bookmarks/${id}/${nodeProps.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ positionx: null, positiony: null }),
+            })
+              .then((res) => res.json())
+              .then((res) => console.log('Node deleted:', res))
+              .catch((err) => console.error('Error deleting node:', err))
+          }}
         >
           <img
             src="/images/cancel.svg"
@@ -345,25 +355,31 @@ const nodeTypes = useMemo(
   const handleNodesChange = useCallback(
     (changes: any) => {
       onNodesChange(changes)
+      console.log('Node changes:', changes)
 
-      // 変更されたノードの位置をバックエンドに送信
-      const updatedNodes = changes
-        .filter((change: any) => change.type === 'position')
-        .map((change: any) => ({
-          id: change.id,
-          position: change.position,
-        }))
-
-      // APIへ送信
-      for (const node of updatedNodes) {
-        fetch(`http://localhost:8787/bookmarks/${id}/${node.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ positionx: node.position.x, positiony: node.position.y }),
-        })
-          .then((res) => res.json())
-          .then((res) => console.log('Node position updated:', res))
-          .catch((err) => console.error('Error updating node position:', err))
+      for (const change of changes) {
+        if (change.type === 'position') {
+          // ノード位置変更時の処理
+          fetch(`http://localhost:8787/bookmarks/${id}/${change.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ positionx: change.position.x, positiony: change.position.y }),
+          })
+            .then((res) => res.json())
+            .then((res) => console.log('Node position updated:', res))
+            .catch((err) => console.error('Error updating node position:', err))
+        }
+        if (change.type === 'remove') {
+          // ノード削除時の処理
+          fetch(`http://localhost:8787/bookmarks/${id}/${change.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ positionx: null, positiony: null }),
+          })
+            .then((res) => res.json())
+            .then((res) => console.log('Node deleted:', res))
+            .catch((err) => console.error('Error deleting node:', err))
+        }
       }
     },
     [id, onNodesChange]
@@ -504,6 +520,14 @@ const onConnect = useCallback(
   onDrop={(e) => {
     const nodeId = e.dataTransfer.getData('text/plain');
     const position = { x: e.clientX - 100, y: e.clientY - 100 }; // ドロップ位置を計算
+    fetch(`http://localhost:8787/bookmarks/${id}/${nodeId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positionx: position.x, positiony: position.y }),
+    })
+      .then((res) => res.json())
+      .then((res) => console.log('Node position updated:', res))
+      .catch((err) => console.error('Error updating node position:', err))
     setNodes((nds) => [
       ...nds,
       {
