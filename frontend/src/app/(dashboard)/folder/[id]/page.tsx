@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState, useRef, useEffect } from 'react'
+import { useCallback, useMemo, useState, useRef, useEffect, memo } from 'react'
 import {
   ReactFlow,
   addEdge,
@@ -24,11 +24,13 @@ interface CustomEdgeData extends Edge<Record<string, unknown>, string | undefine
     onDelete?: (id: string) => void
     onUpdateMemo?: (id: string, memo: string) => void
     memo?: string
+    folderId?: string
 }
 
 // メモ付き削除ボタンカスタムエッジの定義
 const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
   const { id, sourceX, sourceY, targetX, targetY, markerEnd, data } = props
+  console.log('CustomEdge data:', props)
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -36,8 +38,10 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
     targetY,
   })
 
+  const memo = data?.memo
+
   // メモの初期値を取得
-  const [memoText, setMemoText] = useState<string>(typeof data?.memo === 'string' ? data.memo : '')
+  const [memoText, setMemoText] = useState<string>(typeof memo === 'string' ? memo : '')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // 高さをテキストに応じて調整
@@ -59,15 +63,16 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
 
   // メモの変更をAPIへ送信する関数
   const handleMemoBlur = () => {
-    // APIへ送信例
-    fetch(`/api/edges/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memo: memoText }),
-    })
-      .then((res) => res.json())
-      .then((res) => console.log(' Memo updated:', res))
-      .catch((err) => console.error(' Error updating memo:', err))
+    if (data?.folderId) {
+      fetch(`http://localhost:8787/bookmarks/${data.folderId}/edges/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memo: memoText }),
+      })
+        .then((res) => res.json())
+        .then((res) => console.log('Memo updated:', res))
+        .catch((err) => console.error('Error updating memo:', err))
+    }
   }
 
   return (
@@ -252,6 +257,9 @@ export default function FolderDetailPage() {
           target: edge.targetId,
           type: edge.type || 'custom-edge',
           memo: edge.memo,
+          data: {
+            memo: edge.memo
+          }
         })))
         console.log('Fetched edge data:', edgeData.data.map((edge: any) => ({
           id: edge.id,
@@ -309,36 +317,6 @@ export default function FolderDetailPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
-  // ノードの追加処理
-  const handleConnect = useCallback(
-    (connection: Connection) => {
-      const edge: CustomEdgeData = {
-        id: `${connection.source}-${connection.target}`, // ユニークなIDを追加
-        ...connection,
-        type: 'custom-edge',
-        memo: '',
-      };
-      setEdges((eds) => addEdge(edge, eds))
-
-      // APIへ送信
-      fetch(`/api/folders/${id}/edges`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source: connection.source,
-          target: connection.target,
-          id: edge.id,
-          type: edge.type,
-          memo: edge.memo,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => console.log('Edge created:', res))
-        .catch((err) => console.error('Error creating edge:', err))
-    },
-    [setEdges]
-  )
-
 // ノードの削除処理
 const nodeTypes = useMemo(
   () => ({
@@ -348,7 +326,17 @@ const nodeTypes = useMemo(
         <button
           className="absolute top-0 right-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ zIndex: 10 }}
-          onClick={() => setNodes((nds) => nds.filter((n) => n.id !== nodeProps.id))}
+          onClick={() => {
+            setNodes((nds) => nds.filter((n) => n.id !== nodeProps.id))
+            fetch(`http://localhost:8787/bookmarks/${id}/${nodeProps.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ positionx: null, positiony: null }),
+            })
+              .then((res) => res.json())
+              .then((res) => console.log('Node deleted:', res))
+              .catch((err) => console.error('Error deleting node:', err))
+          }}
         >
           <img
             src="/images/cancel.svg"
@@ -367,25 +355,31 @@ const nodeTypes = useMemo(
   const handleNodesChange = useCallback(
     (changes: any) => {
       onNodesChange(changes)
+      console.log('Node changes:', changes)
 
-      // 変更されたノードの位置をバックエンドに送信
-      const updatedNodes = changes
-        .filter((change: any) => change.type === 'position')
-        .map((change: any) => ({
-          id: change.id,
-          position: change.position,
-        }))
-
-      // APIへ送信
-      for (const node of updatedNodes) {
-        fetch(`http://localhost:8787/bookmarks/${id}/${node.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ positionx: node.position.x, positiony: node.position.y }),
-        })
-          .then((res) => res.json())
-          .then((res) => console.log('Node position updated:', res))
-          .catch((err) => console.error('Error updating node position:', err))
+      for (const change of changes) {
+        if (change.type === 'position') {
+          // ノード位置変更時の処理
+          fetch(`http://localhost:8787/bookmarks/${id}/${change.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ positionx: change.position.x, positiony: change.position.y }),
+          })
+            .then((res) => res.json())
+            .then((res) => console.log('Node position updated:', res))
+            .catch((err) => console.error('Error updating node position:', err))
+        }
+        if (change.type === 'remove') {
+          // ノード削除時の処理
+          fetch(`http://localhost:8787/bookmarks/${id}/${change.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ positionx: null, positiony: null }),
+          })
+            .then((res) => res.json())
+            .then((res) => console.log('Node deleted:', res))
+            .catch((err) => console.error('Error deleting node:', err))
+        }
       }
     },
     [id, onNodesChange]
@@ -441,10 +435,12 @@ const onConnect = useCallback(
   // エッジのカスタムレンダリング
   const edgeTypes = useMemo(
     () => ({
-      'custom-edge': (edgeProps: EdgeProps) => (
+      'custom-edge': (edgeProps: EdgeProps<CustomEdgeData>) => (
         <CustomEdge
           {...edgeProps}
           data={{
+            folderId: id,
+            
             ...edgeProps.data,
             onDelete: (id_: string) =>
             {
@@ -524,6 +520,14 @@ const onConnect = useCallback(
   onDrop={(e) => {
     const nodeId = e.dataTransfer.getData('text/plain');
     const position = { x: e.clientX - 100, y: e.clientY - 100 }; // ドロップ位置を計算
+    fetch(`http://localhost:8787/bookmarks/${id}/${nodeId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ positionx: position.x, positiony: position.y }),
+    })
+      .then((res) => res.json())
+      .then((res) => console.log('Node position updated:', res))
+      .catch((err) => console.error('Error updating node position:', err))
     setNodes((nds) => [
       ...nds,
       {

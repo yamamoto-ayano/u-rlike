@@ -747,8 +747,14 @@ app.put('/bookmarks/:folderId/:bookmarkId', async (c) => {
     if (folderId) {
       updateData.folder = { connect: { id: folderId } }
     }
-    if (positionx) updateData.positionx = positionx
-    if (positiony) updateData.positiony = positiony
+
+    if (positionx === null) {
+      updateData.positionx = null
+      updateData.positiony = null
+    } else {
+      if (positionx) updateData.positionx = positionx
+      if (positiony) updateData.positiony = positiony
+    }
 
     const updatedBookmark = await prisma.bookmark.update({
       where: { id: bookmarkId },
