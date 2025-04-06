@@ -31,24 +31,39 @@ export default function RecommendationPage() {
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
-        const res = await fetch("http://localhost:8787/recommendations")
-        if (!res.ok) throw new Error("Failed to fetch recommendations")
-        const json = await res.json()
-
-        const enrichedData = json.data.map((item: any) => ({
+        const res = await fetch("http://localhost:8787/recommendations");
+        if (!res.ok) throw new Error("Failed to fetch recommendations");
+        const json = await res.json();
+  
+        // 複数のデフォルト画像を定義
+        const defaultImages = [
+          "/images/Screenshot 2025-04-06 123802.png",
+          "/images/Screenshot 2025-04-06 131900.png",
+          "/images/Screenshot 2025-04-06 131919.png",
+          "/images/Screenshot 2025-04-06 131949.png",
+          "/images/Screenshot 2025-04-06 132406.png",
+          "/images/Screenshot 2025-04-06 132416.png",
+          "/images/Screenshot 2025-04-06 133007.png",
+          "/images/Screenshot 2025-04-06 133020.png",
+          "/images/Screenshot 2025-04-06 133029.png",
+        ];
+  
+        // 全てのアイテムにデフォルト画像を適用
+        const enrichedData = json.data.map((item: any, index: number) => ({
           ...item,
-          imagea : "https://example.com/default-image.jpg", // デフォルト画像を指定
-        }))
-        setRecommendations(enrichedData)
+          // デフォルト画像を固定順で適用（配列の範囲外の場合は最後の画像を使用）
+          image: item.image || defaultImages[index] || defaultImages[defaultImages.length - 1],
+        }));
+        setRecommendations(enrichedData);
       } catch (err) {
-        console.error("Error fetching recommendations:", err)
+        console.error("Error fetching recommendations:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-
-    fetchRecommendations()
-  }, [])
+    };
+  
+    fetchRecommendations();
+  }, []);
 
   const card0Card = recommendations[currentCardNo]
   const card1Card = recommendations[(currentCardNo + 1) % 2]

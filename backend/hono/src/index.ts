@@ -461,6 +461,7 @@
 
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import recommendationRoute from './router/recommendation'
 
 const isCloudflare = typeof globalThis?.WebSocket !== 'function'
 
@@ -1002,5 +1003,6 @@ app.get('/superlikes/:superlikeId', async (c) => {
   }
 })
 
+app.route('/', recommendationRoute)
 
 export default app
