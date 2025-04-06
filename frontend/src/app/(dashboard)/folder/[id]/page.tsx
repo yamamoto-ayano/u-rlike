@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useState, useRef, useEffect } from 'react'
+import { useCallback, useMemo, useState, useRef, useEffect, memo } from 'react'
 import {
   ReactFlow,
   addEdge,
@@ -23,12 +23,14 @@ import { UrlCard } from '@/components/folder/url-card'
 interface CustomEdgeData extends Edge<Record<string, unknown>, string | undefined> {
     onDelete?: (id: string) => void
     onUpdateMemo?: (id: string, memo: string) => void
-    memo?: string
+    memo: string
+    edges: Edge[]
 }
 
 // メモ付き削除ボタンカスタムエッジの定義
 const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
   const { id, sourceX, sourceY, targetX, targetY, markerEnd, data } = props
+  console.log('CustomEdge data:', props)
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -36,8 +38,10 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
     targetY,
   })
 
+  const memo = data?.edges?.find((edge: any) => edge.id === id)?.memo
+
   // メモの初期値を取得
-  const [memoText, setMemoText] = useState<string>(typeof data?.memo === 'string' ? data.memo : '')
+  const [memoText, setMemoText] = useState<string>(typeof memo === 'string' ? memo : '')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // 高さをテキストに応じて調整
@@ -59,15 +63,16 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
 
   // メモの変更をAPIへ送信する関数
   const handleMemoBlur = () => {
-    // APIへ送信例
-    fetch(`/api/edges/${id}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ memo: memoText }),
-    })
-      .then((res) => res.json())
-      .then((res) => console.log(' Memo updated:', res))
-      .catch((err) => console.error(' Error updating memo:', err))
+    if (data?.folderId) {
+      fetch(`http://localhost:8787/bookmarks/${data.folderId}/edges/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memo: memoText }),
+      })
+        .then((res) => res.json())
+        .then((res) => console.log('Memo updated:', res))
+        .catch((err) => console.error('Error updating memo:', err))
+    }
   }
 
   return (
@@ -309,36 +314,6 @@ export default function FolderDetailPage() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
-  // ノードの追加処理
-  const handleConnect = useCallback(
-    (connection: Connection) => {
-      const edge: CustomEdgeData = {
-        id: `${connection.source}-${connection.target}`, // ユニークなIDを追加
-        ...connection,
-        type: 'custom-edge',
-        memo: '',
-      };
-      setEdges((eds) => addEdge(edge, eds))
-
-      // APIへ送信
-      fetch(`/api/folders/${id}/edges`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          source: connection.source,
-          target: connection.target,
-          id: edge.id,
-          type: edge.type,
-          memo: edge.memo,
-        }),
-      })
-        .then((res) => res.json())
-        .then((res) => console.log('Edge created:', res))
-        .catch((err) => console.error('Error creating edge:', err))
-    },
-    [setEdges]
-  )
-
 // ノードの削除処理
 const nodeTypes = useMemo(
   () => ({
@@ -445,6 +420,8 @@ const onConnect = useCallback(
         <CustomEdge
           {...edgeProps}
           data={{
+            folderId: id,
+            edges: edges,
             ...edgeProps.data,
             onDelete: (id_: string) =>
             {
