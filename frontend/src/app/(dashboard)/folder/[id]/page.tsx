@@ -23,8 +23,8 @@ import { UrlCard } from '@/components/folder/url-card'
 interface CustomEdgeData extends Edge<Record<string, unknown>, string | undefined> {
     onDelete?: (id: string) => void
     onUpdateMemo?: (id: string, memo: string) => void
-    memo: string
-    edges: Edge[]
+    memo?: string
+    folderId?: string
 }
 
 // メモ付き削除ボタンカスタムエッジの定義
@@ -38,7 +38,7 @@ const CustomEdge = (props: EdgeProps<CustomEdgeData>) => {
     targetY,
   })
 
-  const memo = data?.edges?.find((edge: any) => edge.id === id)?.memo
+  const memo = data?.memo
 
   // メモの初期値を取得
   const [memoText, setMemoText] = useState<string>(typeof memo === 'string' ? memo : '')
@@ -257,6 +257,9 @@ export default function FolderDetailPage() {
           target: edge.targetId,
           type: edge.type || 'custom-edge',
           memo: edge.memo,
+          data: {
+            memo: edge.memo
+          }
         })))
         console.log('Fetched edge data:', edgeData.data.map((edge: any) => ({
           id: edge.id,
@@ -416,12 +419,12 @@ const onConnect = useCallback(
   // エッジのカスタムレンダリング
   const edgeTypes = useMemo(
     () => ({
-      'custom-edge': (edgeProps: EdgeProps) => (
+      'custom-edge': (edgeProps: EdgeProps<CustomEdgeData>) => (
         <CustomEdge
           {...edgeProps}
           data={{
             folderId: id,
-            edges: edges,
+            
             ...edgeProps.data,
             onDelete: (id_: string) =>
             {
